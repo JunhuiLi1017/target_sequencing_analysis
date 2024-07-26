@@ -1,0 +1,9 @@
+include: "rules/common.smk"
+include: "rules/qc.smk"
+include: "rules/map_reads.smk"
+include: "rules/align_stat.smk"
+
+rule all:
+    input:
+        "result/01_multiqc/multiqc_report.html",
+        "result/02_Map/summary/summary_target_dedup.txt"
