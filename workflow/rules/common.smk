@@ -38,9 +38,9 @@ def get_trim_fastq(wildcards):
 #  sample={wildcards.sample}
 # in get_fastq(wildcards)
 
-def is_single_end(sample):
+def is_single_end(wildcards):
     """Return True if sample is single end."""
-    return pd.isnull(units.loc[(sample), "fq2"])
+    return pd.isnull(units.loc[(wildcards.sample), "fq2"])
 
 def get_multiqc_input(wildcards):
     if paired_end:
