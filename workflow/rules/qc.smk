@@ -2,16 +2,14 @@ rule trim:
     input:
         unpack(get_fastq)
     output:
-        "result/01_multiqc/fastp_trim/{sample}.R1.fastq.gz" if is_single_end("{sample}") else ["result/01_multiqc/fastp_trim/{sample}.R1.fastq.gz", "result/01_multiqc/fastp_trim/{sample}.R2.fastq.gz"]
+        ["result/01_multiqc/fastp_trim/{sample}.R1.fastq.gz", "result/01_multiqc/fastp_trim/{sample}.R2.fastq.gz"] if paired_end else "result/01_multiqc/fastp_trim/{sample}.R1.fastq.gz"
     log:
         "logs/fastqc/{sample}.log"
-    shell:
-        """
-        fastp -f 10 -F 10 -i {input.r1} -I {input.r2} -o {output[0]} -O {output[1]} > {log} 2>&1
-        """ if is_single_end("{sample}") else
-        """
-        fastp -f 10 -F 10 -i {input.r1} -I {input.r2} -o {output[0]} -O {output[1]} > {log} 2>&1
-        """
+    run:
+        if paired_end:
+            shell("fastp -f 10 -F 10 -i {input.r1} -I {input.r2} -o {output[0]} -O {output[1]} > {log} 2>&1")
+        else:
+            shell("fastp -f 10 -F 10 -i {input.r1} -o {output[0]} > {log} 2>&1")
 
 rule fastqc:
     input:

@@ -1,11 +1,12 @@
 samples: ../config/samples.tsv
 units: ../config/units.tsv
-paired: True
+paired: False
 TargeRegion: ../database/2_target_xgen.sort.bed
 FlankRegion: ../database/2_flank_xgen.sort.bed
 MosaicRegion: ../database/8-06474549_Sotelo_Hyb_targets_v1.chr.expand_all_site.bed
 meta_sample: ../database/sample_id_meta.txt
 ref: /pi/mccb-umw/shared/genome/hg19/hg19.chr.fa
+outpath: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/02ProcessedData/WGS/01_Mosaic_variants/target_IDT
 dpsnp138: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/database_fromHPCC/dataset/bundle/hg19/dbsnp_138.hg19.vcf
 known_indels: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/database_fromHPCC/dataset/bundle/hg19/1000G_phase1.indels.hg19.sites.vcf.gz
 Mills_and_1000G: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/database_fromHPCC/dataset/bundle/hg19/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz

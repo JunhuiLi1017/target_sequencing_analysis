@@ -5,16 +5,13 @@ configfile: "../config/config.yaml"
 
 validate(config, schema = "../schemas/config.schema.yaml")
 
-samples = pd.read_table(config["samples"]).set_index("sample", drop = False)
-validate(samples, schema = "../schemas/samples.schema.yaml")
-
 units = pd.read_table(config["units"], dtype = str).set_index(
     ["sample"], drop = False
 )
 validate(units, schema = "../schemas/units.schema.yaml")
 
 paired_end = config["paired"]
-
+outpath = config["outpath"]
 reference = config["ref"]
 
 def get_fastq(wildcards):
@@ -40,7 +37,7 @@ def get_trim_fastq(wildcards):
 
 def is_single_end(wildcards):
     """Return True if sample is single end."""
-    return pd.isnull(units.loc[(wildcards.sample), "fq2"])
+    return pd.isnull(units.loc[(f"{wildcards.sample}"), "fq2"])
 
 def get_multiqc_input(wildcards):
     if paired_end:

@@ -2,47 +2,42 @@ rule map_reads:
     input:
         get_trim_fastq
     output:
-        o1="result/02_Map/bwa/{sample}.raw.bam",
-        o2="result/02_Map/bwa/{sample}.sort.bam",
-        o3="result/02_Map/bwa/{sample}.sort.stat"
+        o1="result/02_Map/bwa/{sample}.raw.bam"
     log:
-        l1="logs/bwa/{sample}.bwa.log",
-        l2="logs/bwa/{sample}.bwa.sort.log"
+        l1="logs/bwa/{sample}.bwa.log"
     threads:
         8
     params:
         mem="8G",
         rg=get_reads_group,
-        ref=config['ref'],
-        TargeRegion=config['TargeRegion']
-    shell:
-        """
-        bwa mem -t {threads} -M {params.rg} {params.ref} {input[0]} {input[1]} | samtools view -b -o {output.o1} > {log.l1} 2>&1
-        samtools sort -@ {threads} -m 8G -O bam -o {output.o2} {output.o1}> {log.l2} 2>&1
-        samtools stats {output.o2} -t {params.TargeRegion} > {output.o3}
-        samtools index {output.o2}
-        """
-'''
-rule rxbam:
+        ref=config['ref']
+    run:
+        if paired_end:
+            shell("bwa mem -t {threads} -M {params.rg} {params.ref} {input[0]} {input[1]} | samtools view -b -o {output.o1} > {log.l1} 2>&1")
+        else:
+            shell("bwa mem -t {threads} -M {params.rg} {params.ref} {input[0]} | samtools view -b -o {output.o1} > {log.l1} 2>&1")
+
+rule sort_bam:
     input:
-        "result/02_Map/bwa/{sample}.sort.bam"
+        "result/02_Map/bwa/{sample}.raw.bam"
     output:
-        o1=temp("result/02_Map/bwa/{sample}.rx.sort.bam"),
-        o2="result/02_Map/bwa/{sample}.rename.rx.sort.bam"
+        o2="result/02_Map/bwa/{sample}.sort.bam",
+        o3="result/02_Map/bwa/{sample}.sort.stat"
     log:
-       "logs/bwa/{sample}.rx.log" 
+        l2="logs/bwa/{sample}.bwa.sort.log"
     threads:
         12
     params:
         mem="4000",
-        tmpdir="02_Map/bwa"
+        tmpdir="02_Map/bwa",
+        TargeRegion=config['TargeRegion']
     shell:
         """
-        samtools view -@ {threads} -m 5G -h {input} | awk 'BEGIN{{FS=OFS=\"\\t\"}}{{if(/^@/){{print $0}} else {{rx=gensub(/.+:([ATCGN]+)/,"\\\\1","g",$1);print $0,"RX:Z:"rx}}}}' | samtools view -@ {threads} -m 20G -bSh > {output.o1}
-        paste <(samtools view -@ {threads} -m 5G -h {output.o1} | cut -d$'\t' -f 1 | cut -d":" -f 1-7) <(samtools view -@ {threads} -m 5G -h {output.o1} | cut -d$'\t' -f 2-) | samtools view -@ {threads} -m 20G -bSh > {output.o2}
+        samtools sort -@ {threads} -m 8G -O bam -o {output.o2} {input}> {log.l2} 2>&1
+        samtools stats {output.o2} -t {params.TargeRegion} > {output.o3}
         samtools index {output.o2}
-        """    
-'''
+        """  
+
 rule remove_dup:
     input:
         #"result/02_Map/bwa/{sample}.rename.rx.sort.bam"
