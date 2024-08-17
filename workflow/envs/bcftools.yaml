@@ -1,0 +1,8 @@
+name: bcftools 
+
+channels:
+  - bioconda
+  - conda-forge
+
+dependencies:
+  - bioconda::samtools=1.9

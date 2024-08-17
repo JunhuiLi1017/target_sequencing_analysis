@@ -11,3 +11,6 @@ dpsnp138: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_M
 known_indels: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/database_fromHPCC/dataset/bundle/hg19/1000G_phase1.indels.hg19.sites.vcf.gz
 Mills_and_1000G: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/database_fromHPCC/dataset/bundle/hg19/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz
 SegDup_and_clustered: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/05softwares/mosaicforecast/MosaicForecast-master/resources/SegDup_and_clustered.GRCh37.chr.bed
+PON: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/GATK/Mutect2/subPON/somatic-b37_Mutect2-WGS-panel-b37.vcf.gz
+af_only_gnomad: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/database_fromHPCC/dataset/Regions_to_filter_out/hg19/af-only-gnomad/af-only-gnomad.raw.sites.b37.vcf.gz
+

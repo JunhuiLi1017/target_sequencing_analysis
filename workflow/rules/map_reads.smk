@@ -2,7 +2,7 @@ rule map_reads:
     input:
         get_trim_fastq
     output:
-        o1="result/02_Map/bwa/{sample}.raw.bam"
+        o1=temp("result/02_Map/bwa/{sample}.raw.bam")
     log:
         l1="logs/bwa/{sample}.bwa.log"
     threads:

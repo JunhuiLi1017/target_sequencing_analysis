@@ -2,8 +2,11 @@ include: "rules/common.smk"
 include: "rules/qc.smk"
 include: "rules/map_reads.smk"
 include: "rules/align_stat.smk"
+include: "rules/variant_calling.smk"
 
 rule all:
     input:
         "result/01_multiqc/multiqc_report.html",
-        "result/02_Map/summary/summary_target_dedup.txt"
+        "result/02_Map/summary/summary_target_dedup.txt",
+        "result/03_Variants/01_merge_vcf/all.mutect2.filter.vcf.gz",
+        "result/03_Variants/02_pysam_merge_depth/all.pysam.depth.txt"

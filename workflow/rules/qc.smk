@@ -2,7 +2,7 @@ rule trim:
     input:
         unpack(get_fastq)
     output:
-        ["result/01_multiqc/fastp_trim/{sample}.R1.fastq.gz", "result/01_multiqc/fastp_trim/{sample}.R2.fastq.gz"] if paired_end else "result/01_multiqc/fastp_trim/{sample}.R1.fastq.gz"
+        temp(["result/01_multiqc/fastp_trim/{sample}.R1.fastq.gz", "result/01_multiqc/fastp_trim/{sample}.R2.fastq.gz"]) if paired_end else temp("result/01_multiqc/fastp_trim/{sample}.R1.fastq.gz")
     log:
         "logs/fastqc/{sample}.log"
     run:
