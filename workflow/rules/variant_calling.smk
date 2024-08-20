@@ -43,7 +43,7 @@ rule correct_vcf:
         zcat {input.vcf} | sed 's/##INFO=<ID=AS_FilterStatus,Number=A/##INFO=<ID=AS_FilterStatus,Number=1/g' | bgzip > {output.o1} && tabix {output.o1}
         """
 
-rule merge_all_vcf:
+rule merge_all_vcf_mutect2:
     input:
         expand(["result/03_Variants/Mutect2_correct/{u.sample}.mutect2.filter.vcf.gz"], u=units.itertuples())
     output:
@@ -54,6 +54,7 @@ rule merge_all_vcf:
         "../envs/bcftools.yaml"
     shell:
         """
+        source ~/anaconda3/etc/profile.d/conda.sh
         conda activate bcftools
         bcftools merge {input} -o {output.o1}
         conda deactivate
@@ -82,22 +83,81 @@ rule merge_all_depth:
         cat {input} > {output.o1}
         """
 
-'''
 rule variants_RePlow:
     input:
         i1="result/02_Map/bqsr/{sample}.sort.rmdup.bqsr.bam"
     output:
-        o1="result/03_Variants/RePlow/{sample}.RePlow.vcf.gz"
+        o1="result/03_Variants/RePlow/{sample}.snv.call"
     params:
-        outdir="result/03_Variants/RePlow"
-        af_only_gnomad=config['af_only_gnomad'],
+        outdir="result/03_Variants/RePlow",
+        TargeRegion=config['TargeRegion'],
         REFERENCE=config['ref'],
+        sample="{sample}",
+        RePlow=config['RePlow']
     log:
         "logs/variants/{sample}.RePlow.log"
     threads:
         8
     shell:
         """
-        java -Xms10g -XX:ParallelGCThreads={threads} -jar ../../software/RePlow.jar  -r {params.REFERENCE} -b <replicate_sorted_indexed_BAM_list> -T <replicate_target_BED_file_list> -R ~/anaconda3/envs/snakemake/bin/Rscript --output_directory {param.outdir} --label  > {log} 2>&1        
+        java -Xms10g -XX:ParallelGCThreads={threads} -jar {params.RePlow}  -r {params.REFERENCE} -b {input.i1} -T {params.TargeRegion} -R ~/anaconda3/envs/snakemake/bin/Rscript --output_directory {params.outdir} --label {params.sample} > {log} 2>&1
         """
-'''
+
+rule merge_pass_RePlow:
+    input:
+        expand(["result/03_Variants/RePlow/{u.sample}.snv.call"], u=units.itertuples())
+    output:
+        o1="result/03_Variants/01_merge_vcf/all.RePlow.snv.call"
+    params:
+        meta_sample=config['meta_sample']
+    conda:
+        "../envs/bcftools.yaml"
+    shell:
+        """
+        grep "PASS" {input} > {output.o1}
+        """
+
+rule variants_pisces:
+    input:
+        i1="result/02_Map/bqsr/{sample}.sort.rmdup.bqsr.bam"
+    output:
+        o1="result/03_Variants/pisces/{sample}.sort.rmdup.bqsr.vcf"
+    params:
+        outdir="result/03_Variants/pisces",
+        REFERENCE=config['genomefolders']
+    log:
+        "logs/variants/{sample}.pisces.log"
+    threads:
+        8
+    shell:
+        """
+        module load pisces/5.2.10
+        pisces -g {params.REFERENCE} -b {input.i1} -CallMNVs false -gVCF false -o {params.outdir} > {log} 2>&1
+        """
+
+rule variants_pisces_index:
+    input:
+        i1="result/03_Variants/pisces/{sample}.sort.rmdup.bqsr.vcf"
+    output:
+        o1="result/03_Variants/pisces/{sample}.sort.rmdup.bqsr.vcf.gz"
+    threads:
+        8
+    shell:
+        """
+        bgzip {input.i1} && tabix {output.o1}
+        """
+
+rule merge_pisces:
+    input:
+        expand(["result/03_Variants/pisces/{u.sample}.sort.rmdup.bqsr.vcf.gz"], u=units.itertuples())
+    output:
+        o1="result/03_Variants/01_merge_vcf/all.pisces.snv.call.vcf.gz"
+    params:
+        meta_sample=config['meta_sample']
+    shell:
+        """
+        source ~/anaconda3/etc/profile.d/conda.sh
+        conda activate bcftools
+        bcftools merge {input} -o {output.o1}
+        conda deactivate
+        """

@@ -14,3 +14,5 @@ SegDup_and_clustered: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesa
 PON: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/GATK/Mutect2/subPON/somatic-b37_Mutect2-WGS-panel-b37.vcf.gz
 af_only_gnomad: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/database_fromHPCC/dataset/Regions_to_filter_out/hg19/af-only-gnomad/af-only-gnomad.raw.sites.b37.vcf.gz
 
+RePlow: ../software/RePlow.jar
+genomefolders: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_seq/database/Pisces_ref/hg19

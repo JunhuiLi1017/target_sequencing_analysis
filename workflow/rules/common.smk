@@ -13,6 +13,8 @@ validate(units, schema = "../schemas/units.schema.yaml")
 paired_end = config["paired"]
 outpath = config["outpath"]
 reference = config["ref"]
+RePlow = config["RePlow"]
+
 
 def get_fastq(wildcards):
     """get fastq files of given sample"""
