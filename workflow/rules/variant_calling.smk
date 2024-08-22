@@ -119,7 +119,8 @@ rule merge_pass_RePlow:
 
 rule variants_pisces:
     input:
-        i1="result/02_Map/bqsr/{sample}.sort.rmdup.bqsr.bam"
+        i1="result/02_Map/bqsr/{sample}.sort.rmdup.bqsr.bam",
+        i2="result/02_Map/bqsr/{sample}.sort.rmdup.bqsr.bam"
     output:
         o1="result/03_Variants/pisces/{sample}.sort.rmdup.bqsr.vcf"
     params:

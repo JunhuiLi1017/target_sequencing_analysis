@@ -15,4 +15,5 @@ PON: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_Mosaic
 af_only_gnomad: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/database_fromHPCC/dataset/Regions_to_filter_out/hg19/af-only-gnomad/af-only-gnomad.raw.sites.b37.vcf.gz
 
 RePlow: ../software/RePlow.jar
-genomefolders: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_seq/database/Pisces_ref/hg19
+genomefolders: ../database/Pisces_ref/hg19
+versionsorted: ../database/hg19.versionsorted.genome

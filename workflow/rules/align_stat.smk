@@ -61,12 +61,13 @@ rule targt_cov_sortbam:
         o1="result/02_Map/target/{sample}.sort.target.coverage"
     params:
         TargeRegion=config['TargeRegion'],
-        sample="{sample}"
+        sample="{sample}",
+        versionsorted=config['versionsorted']
     log:
         "logs/bwa/{sample}.sort.target.log"
     shell:
         """
-        bedtools coverage -a {params.TargeRegion} -b {input.i1} | awk '{{print "{params.sample}\t" $4 "\t" $7}}' > {output.o1}
+        bedtools coverage -a {params.TargeRegion} -b {input.i1} -sorted -g {params.versionsorted} | awk '{{print "{params.sample}\t" $4 "\t" $7}}' > {output.o1}
         """
 
 rule targt_cov_dupbam:
@@ -76,12 +77,13 @@ rule targt_cov_dupbam:
         o1="result/02_Map/target/{sample}.dup.target.coverage"
     params:
         TargeRegion=config['TargeRegion'],
-        sample="{sample}"
+        sample="{sample}",
+        versionsorted=config['versionsorted']
     log:
         "logs/bwa/{sample}.sort.target.log"
     shell:
         """
-        bedtools coverage -a {params.TargeRegion} -b {input.i1} | awk '{{print "{params.sample}\t" $4 "\t" $7}}' > {output.o1}
+        bedtools coverage -a {params.TargeRegion} -b {input.i1} -sorted -g {params.versionsorted} | awk '{{print "{params.sample}\t" $4 "\t" $7}}' > {output.o1}
         """
 
 rule targt_cov_d_sortbam:
@@ -90,12 +92,13 @@ rule targt_cov_d_sortbam:
     output:
         o1="result/02_Map/target/{sample}.sort.target.coverage.d"
     params:
-        TargeRegion=config['TargeRegion']
+        TargeRegion=config['TargeRegion'],
+        versionsorted=config['versionsorted']
     log:
         "logs/bwa/{sample}.sort.target.log"
     shell:
         """
-        bedtools coverage -a {params.TargeRegion} -b {input.i1} -d > {output.o1}
+        bedtools coverage -a {params.TargeRegion} -b {input.i1} -d -sorted -g {params.versionsorted} > {output.o1}
         """
 
 rule targt_cov_d_dupbam:
@@ -104,12 +107,13 @@ rule targt_cov_d_dupbam:
     output:
         o1="result/02_Map/target/{sample}.dup.target.coverage.d"
     params:
-        TargeRegion=config['TargeRegion']
+        TargeRegion=config['TargeRegion'],
+        versionsorted=config['versionsorted']
     log:
         "logs/bwa/{sample}.sort.target.log"
     shell:
         """
-        bedtools coverage -a {params.TargeRegion} -b {input.i1} -d > {output.o1}
+        bedtools coverage -a {params.TargeRegion} -b {input.i1} -d -sorted -g {params.versionsorted} > {output.o1}
         """
 
 rule mosaic_cov_d_dupbam:
@@ -145,12 +149,13 @@ rule targt_cov_hist_sortbam:
     output:
         o2="result/02_Map/target/{sample}.sort.target.coverage.hist"
     params:
-        TargeRegion=config['TargeRegion']
+        TargeRegion=config['TargeRegion'],
+        versionsorted=config['versionsorted']
     log:
         "logs/bwa/{sample}.sort.target.log"
     shell:
         """
-        bedtools coverage -a {params.TargeRegion} -b {input.i1} -hist | grep "^all" > {output.o2}
+        bedtools coverage -a {params.TargeRegion} -b {input.i1} -hist -sorted -g {params.versionsorted} | grep "^all" > {output.o2}
         """
 
 rule targt_cov_hist_dupbam:
@@ -159,12 +164,13 @@ rule targt_cov_hist_dupbam:
     output:
         o2="result/02_Map/target/{sample}.dup.target.coverage.hist"
     params:
-        TargeRegion=config['TargeRegion']
+        TargeRegion=config['TargeRegion'],
+        versionsorted=config['versionsorted']
     log:
         "logs/bwa/{sample}.sort.target.log"
     shell:
         """
-        bedtools coverage -a {params.TargeRegion} -b {input.i1} -hist | grep "^all" > {output.o2}
+        bedtools coverage -a {params.TargeRegion} -b {input.i1} -hist -sorted -g {params.versionsorted} | grep "^all" > {output.o2}
         """
 
 rule exon_stat_sort:

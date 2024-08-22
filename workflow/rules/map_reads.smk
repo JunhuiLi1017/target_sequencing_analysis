@@ -56,7 +56,6 @@ rule remove_dup:
         #/share/pkg/jdk/1.8.0_77/bin/java -XX:ParallelGCThreads=12 -Xmx14G -jar /share/pkg/picard/2.23.3/picard.jar UmiAwareMarkDuplicatesWithMateCigar --INPUT {input} --ASSUME_SORT_ORDER  coordinate --METRICS_FILE {output.o2} --OUTPUT {output.o1} --UMI_METRICS_FILE {output.o3} --REMOVE_DUPLICATES true > {log} 2>&1
     shell:
         """
-        mkdir -p {params.outdir}
         umi_tools dedup --stdin={input} --log={log.l1} --output-stats={params.prefix} --stdout={output.o1} --umi-separator=":" --paired > {log.l2} 2>&1
         samtools index {output.o1}
         """
@@ -79,7 +78,6 @@ rule BaseRecalibrator:
         outdir="result/02_Map/bqsr"
     shell:
         """
-        mkdir -p {params.outdir}
         java -Xms10g -XX:ParallelGCThreads={threads} -jar /home/junhui.li11-umw/anaconda3/envs/snakemake/share/gatk4-4.1.8.1-0/gatk-package-4.1.8.1-local.jar BaseRecalibrator -I {input} -O {output.o1} -R {params.ref} --known-sites {params.dpsnp138} --known-sites {params.known_indels} --known-sites {params.Mills_and_1000G} > {log} 2>&1
         """
 
@@ -89,7 +87,7 @@ rule ApplyBQSR:
         i2="result/02_Map/bqsr/{sample}.recal_data.table"
     output:
         o1="result/02_Map/bqsr/{sample}.sort.rmdup.bqsr.bam",
-        o2="result/02_Map/bqsr/{sample}.sort.rmdup.bqsr.bai"
+        o2="result/02_Map/bqsr/{sample}.sort.rmdup.bqsr.bam.bai"
     log:
         "logs/bwa/{sample}.applyBQSR.log"
     threads:
@@ -102,4 +100,5 @@ rule ApplyBQSR:
         """
         java -Xms10g -XX:ParallelGCThreads={threads} -jar /home/junhui.li11-umw/anaconda3/envs/snakemake/share/gatk4-4.1.8.1-0/gatk-package-4.1.8.1-local.jar ApplyBQSR -I {input.i1} -O {output.o1} -R {params.ref} --bqsr-recal-file {input.i2} > {log} 2>&1
         samtools flagstat {output.o1} > {params.prefix}.txt
+        samtools index {output.o1} {output.o2}
         """
