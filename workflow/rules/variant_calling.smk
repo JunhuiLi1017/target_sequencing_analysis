@@ -33,6 +33,29 @@ rule FilterMutectCall:
         java -Xms10g -XX:ParallelGCThreads={threads} -jar /home/junhui.li11-umw/anaconda3/envs/snakemake/share/gatk4-4.1.8.1-0/gatk-package-4.1.8.1-local.jar FilterMutectCalls -R {params.REFERENCE} -V {input.vcf} -O {output} > {log} 2>&1
         '''
 
+rule mutect2_snv:
+    input:
+        vcf="result/03_Variants/Mutect2/{sample}.mutect2.filter.vcf.gz"
+    output:
+        o1="result/03_Variants/Mutect2/{sample}.mutect2.pass.recode.vcf",
+        o2="result/03_Variants/Mutect2/{sample}.mutect2.pass.snv.recode.vcf"
+    log:
+        "logs/variants/{sample}.pass.log"
+    threads:
+        8
+    params:
+        REFERENCE=config['ref'],
+        sample='result/03_Variants/Mutect2/{sample}'
+    conda:
+        "../envs/vcftools.yaml"
+    shell:
+        '''
+        source ~/anaconda3/etc/profile.d/conda.sh; conda activate vcftools
+        vcftools --gzvcf {input.vcf} --keep-filtered PASS --recode --out {params.sample}.mutect2.pass
+        vcftools --vcf {output.o1} --remove-indels --recode --recode-INFO-all --out {params.sample}.mutect2.pass.snv
+        conda deactivate
+        '''
+
 rule correct_vcf:
     input:
         vcf="result/03_Variants/Mutect2/{sample}.mutect2.filter.vcf.gz"
@@ -103,6 +126,16 @@ rule variants_RePlow:
         java -Xms10g -XX:ParallelGCThreads={threads} -jar {params.RePlow}  -r {params.REFERENCE} -b {input.i1} -T {params.TargeRegion} -R ~/anaconda3/envs/snakemake/bin/Rscript --output_directory {params.outdir} --label {params.sample} > {log} 2>&1
         """
 
+rule replow_snv:
+    input:
+        rep_var="result/03_Variants/RePlow/{sample}.snv.call"
+    output:
+        o3="result/04_overlap/00_input/{sample}.replow.pass.snv.txt"
+    shell:
+        '''
+        grep 'PASS' {input.rep_var} > {output.o3}
+        '''
+
 rule merge_pass_RePlow:
     input:
         expand(["result/03_Variants/RePlow/{u.sample}.snv.call"], u=units.itertuples())
@@ -120,7 +153,7 @@ rule merge_pass_RePlow:
 rule variants_pisces:
     input:
         i1="result/02_Map/bqsr/{sample}.sort.rmdup.bqsr.bam",
-        i2="result/02_Map/bqsr/{sample}.sort.rmdup.bqsr.bam"
+        i2="result/02_Map/bqsr/{sample}.sort.rmdup.bqsr.bam.bai"
     output:
         o1="result/03_Variants/pisces/{sample}.sort.rmdup.bqsr.vcf"
     params:
@@ -147,6 +180,29 @@ rule variants_pisces_index:
         """
         bgzip {input.i1} && tabix {output.o1}
         """
+
+rule pisces_snv:
+    input:
+        vcf="result/03_Variants/pisces/{sample}.sort.rmdup.bqsr.vcf.gz"
+    output:
+        o1="result/03_Variants/pisces/{sample}.pisces.pass.recode.vcf",
+        o2="result/03_Variants/pisces/{sample}.pisces.pass.snv.recode.vcf"
+    log:
+        "logs/variants/{sample}.pass.log"
+    threads:
+        8
+    params:
+        REFERENCE=config['ref'],
+        sample='result/03_Variants/pisces/{sample}'
+    conda:
+        "../envs/vcftools.yaml"
+    shell:
+        '''
+        source ~/anaconda3/etc/profile.d/conda.sh; conda activate vcftools
+        vcftools --gzvcf {input.vcf} --keep-filtered PASS --recode --out {params.sample}.pisces.pass
+        vcftools --vcf {output.o1} --remove-indels --recode --recode-INFO-all --out {params.sample}.pisces.pass.snv
+        conda deactivate
+        '''
 
 rule merge_pisces:
     input:
