@@ -1,3 +1,18 @@
+rule bqsr_insert:
+    input:
+        i1="result/02_Map/bqsr/{sample}.sort.rmdup.bqsr.bam"
+    output:
+        o1="result/02_Map/bqsr/{sample}.sort.rmdup.bqsr.insert.png"
+    log:
+        "logs/bwa/{sample}.deeptools.insert.log"
+    shell:
+        """
+        source ~/anaconda3/etc/profile.d/conda.sh
+        conda activate deeptools
+        bamPEFragmentSize -b {input.i1} -o {output.o1}
+        conda deactivate
+        """
+
 rule targt_intersect_sortbam:
     input:
         i1="result/02_Map/bwa/{sample}.sort.bam"
@@ -261,7 +276,8 @@ rule summary:
         i21="result/02_Map/target/plot/allsample.sort.target.coverage.hist.pdf",
         i22="result/02_Map/target/plot/allsample.dup.target.coverage.hist.pdf",
         i3="result/02_Map/target/plot/all.dup.probe.coverage.pdf",
-        i4="result/02_Map/target/plot/all.dup.target.coverage.mosaic.pdf"
+        i4="result/02_Map/target/plot/all.dup.target.coverage.mosaic.pdf",
+        i5=expand(["result/02_Map/bqsr/{u.sample}.sort.rmdup.bqsr.insert.png"],u=units.itertuples())
     output:
         o1="result/02_Map/summary/summary_target_dedup.txt"
     shell:
