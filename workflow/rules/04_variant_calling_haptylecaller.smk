@@ -38,6 +38,8 @@ rule sample_name_map:
 		"{outpath}/03_variants_germline/04_haplotypecaller/01_raw/sample.list.txt"
 	log:
 		"{outpath}/03_variants_germline/logs/genomics_db_import/sample.list.log"
+	params:
+		sample_list=lambda wildcards, input: "\n".join([f"{sample} {gvcf}" for sample, gvcf in zip(Sample, input.gvcfs)])
 	threads:
 		resource['resource']['low']['threads']
 	resources:
@@ -46,7 +48,7 @@ rule sample_name_map:
 		"../envs/gatk.sif"
 	shell:
 		"""
-		ls {input.gvcfs} > {output}
+		echo "{params.sample_list}" > {output}
 		"""
 
 rule genomics_db_import:
