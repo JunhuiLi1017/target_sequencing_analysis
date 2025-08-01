@@ -1,0 +1,21 @@
+include: "rules/00_common.smk"
+#include: "rules/01_qc.smk"
+#include: "rules/02_map_reads.smk"
+#include: "rules/03_map_stat.smk"
+#include: "rules/04_variant_calling_m2.smk"
+#include: "rules/04_variant_calling_pisces.smk"
+#include: "rules/04_variant_calling_RePlow.smk"
+include: "rules/04_variant_calling_haptylecaller.smk"
+#include: "rules/05_annotation.smk"
+#include: "rules/06_variant_overlap.smk"
+#include: "rules/07_report.smk"
+
+rule all:
+    input:
+        #expand("{outpath}/01_multiqc/multiqc_report.html", outpath=Outpath),
+        #expand("{outpath}/02_map/07_summary/summary_target_dedup.txt", outpath=Outpath),
+        #expand("{outpath}/03_variants/{caller}/07_merge_vcf/all.{caller}.pass.vcf.gz", outpath=Outpath, caller=Caller),
+        #expand("{outpath}/04_overlap/01_plot/{sample}.venn.diagram.png", outpath=Outpath, sample=Sample),
+        #expand("{outpath}/04_overlap/01_plot/{sample}.scatter.png", outpath=Outpath, sample=Sample),
+        expand("{outpath}/03_variants_germline/10_score/all.pass.{ref_version}.rcnv_gnomadlof_multianno.txt", outpath=Outpath, ref_version=Ref_version)
+        #expand("{outpath}/05_report/report.html", outpath=Outpath)

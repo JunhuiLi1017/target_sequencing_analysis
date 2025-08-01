@@ -1,0 +1,57 @@
+##-------------------
+## units and resource
+##-------------------
+units: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/IDT_target/20250714/config/units.tsv
+resource: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/IDT_target/20250714/config/resources.yaml
+
+
+outpath: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/02ProcessedData/target_seq/20250724
+
+
+meta_sample: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/IDT_target/20250714/config/sample_id_meta.txt
+
+
+##-------------------
+## reference
+##-------------------
+ref_version: hg38
+reference: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/database_fromHPCC/dataset/bundle/hg38/Homo_sapiens_assembly38.fasta
+interval: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/database_fromHPCC/dataset/bundle/hg38/interval
+dbsnp138: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/database_fromHPCC/dataset/bundle/hg38/Homo_sapiens_assembly38.dbsnp138.vcf.gz
+mills_and_1000g: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/database_fromHPCC/dataset/bundle/hg38/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz
+pon: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/GATK/Mutect2/1000g_pon.hg38.vcf.gz
+af_only_gnomad: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/database_fromHPCC/dataset/Regions_to_filter_out/hg38/af-only-gnomad/af-only-gnomad.hg38.vcf.gz
+hapmap: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/database_fromHPCC/dataset/bundle/hg38/hapmap_3.3.hg38.vcf.gz
+omni: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/database_fromHPCC/dataset/bundle/hg38/1000G_omni2.5.hg38.vcf.gz
+g1000_known_indels: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/database_fromHPCC/dataset/bundle/hg38/1000G_phase3_v4_20130502.sites.hg38.vcf.gz
+
+##-------------------
+## target region
+##-------------------
+TargeRegion: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/database/hg38/2_target_xgen.sort.hg38.bed
+FlankRegion: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/database/hg38/2_flank_xgen.sort.hg38.bed
+MosaicRegion: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/database/hg38/8-06474549_Sotelo_Hyb_targets_v1.chr.expand_all_site.hg38.bed
+FinalRegion: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/database/hg38/9-finalized.amplicon.hg38.txt
+FinalRegion_bed: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/database/hg38/9-finalized.amplicon.hg38.target.bed
+
+##---------snv----------
+gnomad_LoF: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/gene_score_als_gene/gnomad_LoF_hg38.reform.txt
+rCNV_gene_score: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/gene_score_als_gene/rCNV_gene_score.hg38.txt
+
+#---------software----------
+annovar_dir: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/database_fromHPCC/dataset/ANNOVAR/annovar
+reformat_script: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/GATK_mutect2/workflow/scripts/reformat_vcf_dataset.py 
+process_tier_script: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/GATK_mutect2/workflow/scripts/process_tier_vcf.py
+split_by_chrom: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/GATK_mutect2/workflow/scripts/split_by_chrom.py
+extract_variants: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/GATK_mutect2/workflow/scripts/extract_variants.py
+gatk_4.0.12.0_path: /home/junhui.li11-umw/anaconda3/envs/gatk4.0.xx/share/gatk4-4.0.12.0-0/gatk-package-4.0.12.0-local.jar
+gatk_4.1.8.1_path: /home/junhui.li11-umw/anaconda3/envs/snakemake/share/gatk4-4.1.8.1-0/gatk-package-4.1.8.1-local.jar
+gatk_current_using: /home/junhui.li11-umw/anaconda3/envs/gatk4.6.1.0/share/gatk4-4.6.1.0-0/gatk-package-4.6.1.0-local.jar
+RePlow: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/software/RePlow.jar
+genomefolders: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/database_fromHPCC/dataset/bundle/hg38/pisces
+versionsorted: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/database/hg38/hg38.versionsorted.genome
+
+callers:
+  - 01_mutect2
+  - 02_pisces
+  - 03_replow

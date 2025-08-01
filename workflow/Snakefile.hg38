@@ -1,0 +1,15 @@
+include: "rules/00_common.smk"
+#include: "rules/01_qc.smk"
+#include: "rules/02_map_reads.smk"
+#include: "rules/03_map_stat.smk"
+#include: "rules/04_variant_calling_m2.smk"
+#include: "rules/04_variant_calling_pisces.smk"
+#include: "rules/04_variant_calling_RePlow.smk"
+include: "rules/04_variant_calling_haptylecaller.smk"
+#include: "rules/05_annotation.smk"
+#include: "rules/06_variant_overlap.smk"
+#include: "rules/07_report.smk"
+
+rule all:
+    input:
+        expand("{outpath}/03_variants_germline/10_score/all.pass.{ref_version}.rcnv_gnomadlof_multianno.txt", outpath=Outpath, ref_version=Ref_version)
