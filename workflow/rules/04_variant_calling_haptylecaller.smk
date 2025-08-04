@@ -39,7 +39,7 @@ rule sample_name_map:
 	log:
 		"{outpath}/03_variants_germline/logs/genomics_db_import/sample.list.log"
 	params:
-		sample_list=lambda wildcards, input: "\n".join([f"{sample} {gvcf}" for sample, gvcf in zip(Sample, input.gvcfs)])
+		sample_list=lambda wildcards, input: "\n".join([f"{sample}\t{gvcf}" for sample, gvcf in zip(Sample, input.gvcfs)])
 	threads:
 		resource['resource']['low']['threads']
 	resources:
@@ -103,9 +103,9 @@ rule genotype_gvcfs:
 		gatk=config['gatk_current_using'],
 		command_mem=lambda wildcards, resources, threads: (resources.mem_mb * threads - 2000)
 	threads:
-		resource['resource']['high']['threads']
+		resource['resource']['very_high']['threads']
 	resources:
-		mem_mb=resource['resource']['high']['mem_mb']
+		mem_mb=resource['resource']['very_high']['mem_mb']
 	singularity:
 		"../envs/gatk.sif"
 	shell:
@@ -194,6 +194,7 @@ rule variant_recalibrator_snp:
 			-O {output.recal} \
 			--tranches-file {output.tranches} \
 			--rscript-file {output.rscript} \
+			--dont-run-rscript \
 			--tranche 100.0 --tranche 99.9 --tranche 99.0 --tranche 90.0 > {log} 2>&1
 			conda deactivate
 		"""
@@ -236,6 +237,7 @@ rule variant_recalibrator_indel:
 			-O {output.recal} \
 			--tranches-file {output.tranches} \
 			--rscript-file {output.rscript} \
+			--dont-run-rscript \
 			--tranche 100.0 --tranche 99.9 --tranche 99.0 --tranche 90.0 \
 			--max-gaussians 4 > {log} 2>&1
 			conda deactivate
@@ -373,7 +375,7 @@ rule annotate_clinvar_gnomad_germline:
 	params:
 		ref_version=config['ref_version'],
 		annovar_dir=config['annovar_dir'],
-		outputanno="{outpath}/03_variants_germline/09_annovar/all.pass",
+		outputanno="{outpath}/03_variants_germline/04_haplotypecaller/09_annovar/all.pass",
 		command_mem=lambda wildcards, resources, threads: (resources.mem_mb * threads - 2000)
 	threads:
 		resource['resource']['high']['threads']
