@@ -401,8 +401,8 @@ rule annotate_rcnv_gnomadlof_germline:
 	input:
 		tier_anno="{outpath}/03_variants_germline/04_haplotypecaller/09_annovar/all.pass.{ref_version}_multianno.txt"
 	output:
-		sub="{outpath}/03_variants_germline/10_score/all.pass.{ref_version}.exonic_splicing_multianno.txt",
-		txt="{outpath}/03_variants_germline/10_score/all.pass.{ref_version}.rcnv_gnomadlof_multianno.txt"
+		sub="{outpath}/03_variants_germline/04_haplotypecaller/10_score/all.pass.{ref_version}.exonic_splicing_multianno.txt",
+		txt="{outpath}/03_variants_germline/04_haplotypecaller/10_score/all.pass.{ref_version}.rcnv_gnomadlof_multianno.txt"
 	log:
 		"{outpath}/03_variants_germline/logs/all.{ref_version}.rcnv_lof.log"
 	params:

@@ -12,4 +12,4 @@ include: "rules/04_variant_calling_haptylecaller.smk"
 
 rule all:
     input:
-        expand("{outpath}/03_variants_germline/10_score/all.pass.{ref_version}.rcnv_gnomadlof_multianno.txt", outpath=Outpath, ref_version=Ref_version)
+        expand("{outpath}/03_variants_germline/04_haplotypecaller/10_score/all.pass.{ref_version}.rcnv_gnomadlof_multianno.txt", outpath=Outpath, ref_version=Ref_version)
