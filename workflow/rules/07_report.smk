@@ -25,7 +25,7 @@ rule report:
 		mem_mb=resource['resource']['medium']['mem_mb']
 	params:
 		report_ipynb = "/pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/workflow/lib/report.ipynb"
-	singularity:
+	container:
 		"../envs/r.sif"
 	shell:
 		'''

@@ -18,7 +18,7 @@ rule variants_mutect2:
 		resource['resource']['high']['threads']
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
-	singularity:
+	container:
 		"../envs/gatk4.6.1.0.sif"
 	shell:
 		"""
@@ -53,7 +53,7 @@ rule filter_mutectcalls:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
-	singularity:
+	container:
 		"../envs/gatk4.6.1.0.sif"
 	shell:
 		'''

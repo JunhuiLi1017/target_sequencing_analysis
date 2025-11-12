@@ -14,7 +14,7 @@ rule samtools_mpileup:
 		resource['resource']['high']['threads']
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
-	singularity:
+	container:
 		"../envs/samtools.sif"
 	shell:
 		"""
@@ -35,7 +35,7 @@ rule reads_count:
 		resource['resource']['high']['threads']
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
-	singularity:
+	container:
 		"../envs/python.sif"
 	shell:
 		"""

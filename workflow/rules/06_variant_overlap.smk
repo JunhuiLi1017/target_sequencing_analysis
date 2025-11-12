@@ -11,7 +11,7 @@ rule venn_input:
 		mem_mb=resource['resource']['low']['mem_mb']
 	params:
 		venn_input_cmd=get_venn_input
-	singularity:
+	container:
 		"../envs/r.sif"
 	shell:
 		r"""
@@ -29,7 +29,7 @@ rule venn_input_filter_indel:
 		resource['resource']['low']['threads']
 	resources:
 		mem_mb=resource['resource']['low']['mem_mb']
-	singularity:
+	container:
 		"../envs/r.sif"
 	shell:
 		"""
@@ -49,7 +49,7 @@ rule venn_plot:
 		mem_mb=resource['resource']['low']['mem_mb']
 	params:
 		venn_rscript="/pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/workflow/bin/variants_venn_v1.0.R"
-	singularity:
+	container:
 		"../envs/r.sif"
 	shell:
 		r"""
@@ -69,7 +69,7 @@ rule scatter_input:
 		mem_mb=resource['resource']['low']['mem_mb']
 	params:
 		scatter_cmd=get_scatter_cmd,
-	singularity:
+	container:
 		"../envs/r.sif"
 	shell:
 		r"""
@@ -89,7 +89,7 @@ rule scatter_plot:
 		mem_mb=resource['resource']['low']['mem_mb']
 	params:
 		variants_scatter_script="/pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/workflow/bin/variants_scatter_v1.0.R"
-	singularity:
+	container:
 		"../envs/r.sif"
 	shell:
 		r"""

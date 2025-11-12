@@ -11,14 +11,12 @@ rule split_multiallelic:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
-	singularity:
-		"../envs/bcftools.sif"
+	container:
+		"/pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/workflow/envs/bcftools_v1.10.2.sif"
 	shell:
 		'''
-		source ~/anaconda3/etc/profile.d/conda.sh; conda activate bcftools
 		bcftools norm -m - -o {output.vcf} -Oz {input.vcf} > {log} 2>&1
 		tabix -p vcf {output.vcf}
-		conda deactivate
 		'''
 
 rule pass_filter:
@@ -34,14 +32,12 @@ rule pass_filter:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
-	singularity:
-		"../envs/bcftools.sif"
+	container:
+		"/pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/workflow/envs/bcftools_v1.10.2.sif"
 	shell:
 		'''
-		source ~/anaconda3/etc/profile.d/conda.sh; conda activate bcftools
 		bcftools filter -i 'FILTER="PASS"' -o {output.vcf} -Oz {input.vcf} > {log} 2>&1
 		tabix -p vcf {output.vcf}
-		conda deactivate
 		'''
 
 rule annotate_clinvar_gnomad:
@@ -60,8 +56,6 @@ rule annotate_clinvar_gnomad:
 		resource['resource']['high']['threads']
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
-	singularity:
-		"../envs/perl.sif"
 	shell:
 		'''
 		perl {params.annovar_dir}/table_annovar.pl \
@@ -113,11 +107,9 @@ rule caller_merge_vcf:
 		resource['resource']['high']['threads']
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
-	singularity:
-		"../envs/bcftools.sif"
+	container:
+		"/pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/workflow/envs/bcftools_v1.10.2.sif"
 	shell:
 		'''
-		source ~/anaconda3/etc/profile.d/conda.sh; conda activate bcftools
 		bcftools merge {input.passvcf} -Oz -o {output.merged_vcf} > {log} 2>&1 && tabix -p vcf {output.merged_vcf}
-		conda deactivate
 		'''

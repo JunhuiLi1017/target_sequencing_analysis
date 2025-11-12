@@ -12,8 +12,8 @@ rule bqsr_insert:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
-	singularity:
-		"../envs/deeptools.sif"
+	container:
+		container_image['deeptools']
 	shell:
 		"""
 		source ~/anaconda3/etc/profile.d/conda.sh
@@ -35,8 +35,8 @@ rule targt_intersect_bam:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
-	singularity:
-		"../envs/bedtools.sif"
+	container:
+		container_image['bedtools']
 	shell:
 		"""
 		bedtools intersect -abam {input.bam} -b {params.TargeRegion} -wa -bed > {output.bed}
@@ -55,7 +55,7 @@ rule targt_intersectV_bam:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
-	singularity:
+	container:
 		"../envs/bedtools.sif"
 	shell:
 		"""
@@ -78,7 +78,7 @@ rule targt_cov_bam:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
-	singularity:
+	container:
 		"../envs/bedtools.sif"
 	shell:
 		"""
@@ -100,7 +100,7 @@ rule targt_cov_d_bam:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
-	singularity:
+	container:
 		"../envs/bedtools.sif"
 	shell:
 		"""
@@ -121,7 +121,7 @@ rule mosaic_cov_d_bam:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
-	singularity:
+	container:
 		"../envs/bedtools.sif"
 	shell:
 		"""
@@ -146,7 +146,7 @@ rule mosaic_cov_d_all_bam:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
-	singularity:
+	container:
 		"../envs/bedtools.sif"
 	shell:
 		"""
@@ -168,7 +168,7 @@ rule targt_cov_hist_bam:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
-	singularity:
+	container:
 		"../envs/bedtools.sif"
 	shell:
 		"""
@@ -232,7 +232,7 @@ rule exon_hist_stat:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
-	singularity:
+	container:
 		"../envs/r.sif"
 	shell:
 		"""
@@ -259,7 +259,7 @@ rule exon_hist_plot:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
-	singularity:
+	container:
 		"../envs/r.sif"
 	shell:
 		"""
@@ -282,7 +282,7 @@ rule probe_plot:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
-	singularity:
+	container:
 		"../envs/r.sif"
 	shell:
 		"""

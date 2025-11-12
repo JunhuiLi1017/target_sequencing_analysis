@@ -1,0 +1,16 @@
+include: "rules/00_common.smk"
+include: "rules/01_qc.smk"
+include: "rules/02_map_reads.smk"
+#include: "rules/03_map_stat.smk"
+#include: "rules/04_variant_calling_m2.smk"
+#include: "rules/04_variant_calling_pisces.smk"
+#include: "rules/04_variant_calling_RePlow.smk"
+include: "rules/04_variant_calling_deepvariant.smk"
+#include: "rules/04_variant_calling_haptylecaller.smk"
+include: "rules/05_annotation.smk"
+#include: "rules/06_variant_overlap.smk"
+#include: "rules/07_report.smk"
+
+rule all:
+    input:
+        expand("{outpath}/03_variants/{caller}/07_merge_vcf/all.{caller}.pass.vcf.gz", outpath=Outpath, caller=Caller)

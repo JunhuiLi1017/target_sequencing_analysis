@@ -13,8 +13,8 @@ rule map_reads:
 		resource['resource']['high']['threads']
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
-	singularity:
-		"../envs/bwa.sif"
+	#container:
+	#	"http://depot.galaxyproject.org/singularity/bwa:0.7.17--hed695b0_6"
 	shell:
 		"""
 		bwa mem -t {threads} \
@@ -35,7 +35,8 @@ rule merge_and_sort:
 			for u in units[units["sample"] == wildcards.sample].itertuples()
 		]
 	output:
-		bam=temp("{outpath}/02_map/02_sort/{sample}/{sample}.02_sort.bam")
+		bam=temp("{outpath}/02_map/02_sort/{sample}/{sample}.02_sort.bam"),
+		bai=temp("{outpath}/02_map/02_sort/{sample}/{sample}.02_sort.bam.bai")
 	log:
 		"{outpath}/02_map/logs/{sample}/{sample}.merge_and_sort.log"
 	threads:
@@ -48,8 +49,8 @@ rule merge_and_sort:
 		merged_bam=lambda wildcards, input: f"{outpath}/02_map/02_sort/{wildcards.sample}/{wildcards.sample}.merged.bam"
 		if len(input) > 1 else input[0],
 		command_mem=lambda wildcards, resources, threads: (resources.mem_mb * threads - 4000)
-	singularity:
-		"../envs/sambamba.0.1.sif"
+	#container:
+	#	"http://depot.galaxyproject.org/singularity/sambamba:1.0.1--he614052_4"
 	shell:
 		"""
 		if [ {input} != {params.merged_bam} ]; then
@@ -66,6 +67,7 @@ rule merge_and_sort:
 		{params.merged_bam} > {log} 2>&1
 		sambamba flagstat {output.bam}
 		sambamba index {output.bam}
+		samtools index {output.bam}
 		""" 
 
 rule remove_dup:
@@ -82,11 +84,11 @@ rule remove_dup:
 		resource['resource']['high']['threads']
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
-	singularity:
-		"../envs/umi_tools_1.1.6.sif"
+	container:
+		"umi_tools:1.1.6--py39hbcbf7aa_0"
 	shell:
 		"""
-		source ~/anaconda3/etc/profile.d/conda.sh; conda activate umi_tools116
+		#source ~/anaconda3/etc/profile.d/conda.sh; conda activate umi_tools116
 		umi_tools dedup --stdin={input.bam} \
 			--log={log} \
 			--output-stats={params.output_stats} \
@@ -95,7 +97,7 @@ rule remove_dup:
 			--paired >> {log} 2>&1
 			
 		samtools index {output.bam}
-		conda deactivate
+		#conda deactivate
 		"""
 
 rule base_recalibrator:
@@ -116,8 +118,8 @@ rule base_recalibrator:
 		resource['resource']['high']['threads']
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
-	singularity:
-		"../envs/gatk4.6.1.0.sif"
+	container:
+		container_image['gatk4.6.1.0']
 	shell:
 		"""
 		source ~/anaconda3/etc/profile.d/conda.sh; conda activate gatk4.6.1.0
@@ -152,8 +154,8 @@ rule apply_bqsr:
 		resource['resource']['high']['threads']
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
-	singularity:
-		"../envs/gatk4.6.1.0.sif"
+	container:
+		container_image['gatk4.6.1.0']
 	shell:
 		"""
 		source ~/anaconda3/etc/profile.d/conda.sh; conda activate gatk4.6.1.0
@@ -188,8 +190,8 @@ rule multiqc_stats_bqsr:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
-	singularity:
-		"../envs/multiqc.sif"
+	container:
+		container_image['multiqc_1.22.3']
 	shell:
 		"""
 		multiqc -o {params.out_multiqc_stats} {params.in_stats} --force
@@ -213,8 +215,8 @@ rule multiqc_idxstats_bqsr:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
-	singularity:
-		"../envs/multiqc.sif"
+	container:
+		container_image['multiqc_1.22.3']
 	shell:
 		"""
 		multiqc -o {params.out_multiqc_idxstats} {params.in_idxstats} --force
@@ -239,8 +241,8 @@ rule multiqc_flagstat_bqsr:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
-	singularity:
-		"../envs/multiqc.sif"
+	container:
+		container_image['multiqc_1.22.3']
 	shell:
 		"""
 		multiqc -o {params.out_multiqc_flagstat} {params.in_flagstat} --force

@@ -17,5 +17,6 @@ rule all:
         #expand("{outpath}/03_variants/{caller}/07_merge_vcf/all.{caller}.pass.vcf.gz", outpath=Outpath, caller=Caller),
         #expand("{outpath}/04_overlap/01_plot/{sample}.venn.diagram.png", outpath=Outpath, sample=Sample),
         #expand("{outpath}/04_overlap/01_plot/{sample}.scatter.png", outpath=Outpath, sample=Sample),
-        expand("{outpath}/03_variants_germline/10_score/all.pass.{ref_version}.rcnv_gnomadlof_multianno.txt", outpath=Outpath, ref_version=Ref_version)
+        #expand("{outpath}/03_variants_germline/10_score/all.pass.{ref_version}.rcnv_gnomadlof_multianno.txt", outpath=Outpath, ref_version=Ref_version)
+        expand("{outpath}/03_variants_germline/15_all/all.{ref_version}.germline_summary.txt", outpath=Outpath, ref_version=Ref_version)
         #expand("{outpath}/05_report/report.html", outpath=Outpath)

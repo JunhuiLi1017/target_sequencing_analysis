@@ -13,7 +13,7 @@ properties:
     type: array
     items:
       type: string
-      enum: ["01_mutect2", "02_pisces", "03_replow", "04_haplotypecaller"]
+      enum: ["01_mutect2", "02_pisces", "03_replow", "04_deepvariant"]
   meta_sample:
     type: string
   outpath:

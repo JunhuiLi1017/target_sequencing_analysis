@@ -13,7 +13,7 @@ rule variants_pisces:
         resource['resource']['medium']['threads']
     resources:
         mem_mb=resource['resource']['medium']['mem_mb']
-    singularity:
+    container:
         "../envs/pisces:5.2.10.49--0.sif"
     shell:
         """

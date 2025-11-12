@@ -37,6 +37,7 @@ FinalRegion_bed: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/202
 ##---------snv----------
 gnomad_LoF: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/gene_score_als_gene/gnomad_LoF_hg38.reform.txt
 rCNV_gene_score: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/gene_score_als_gene/rCNV_gene_score.hg38.txt
+deepvariant_model: WGS
 
 #---------software----------
 annovar_dir: /pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/03Database/database_fromHPCC/dataset/ANNOVAR/annovar
@@ -55,3 +56,4 @@ callers:
   - 01_mutect2
   - 02_pisces
   - 03_replow
+  - 04_deepvariant

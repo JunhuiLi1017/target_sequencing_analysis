@@ -56,10 +56,8 @@ rule fastp:
 	threads: resource['resource']['high']['threads']
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
-	#conda:
-	#	"../envs/fastp.yaml" 
-	singularity:
-		"../envs/fastp.sif"
+	container:	
+		container_image['fastp_0.22.0']
 	shell:
 		"""
 		fastp {params.trim_expr} \
@@ -71,7 +69,6 @@ rule fastp:
 			--thread {threads} \
 			> {log} 2>&1
 		"""
-
 
 rule fastqc:
 	input:
@@ -87,8 +84,8 @@ rule fastqc:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
-	singularity:
-		"../envs/fastqc.sif"
+	container:
+		container_image['fastqc_0.11.9']
 	shell:
 		"fastqc -o {params.fastqc_out} {input} > {log} 2>&1"
 
@@ -106,8 +103,8 @@ rule multiqc:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
-	singularity:
-		"../envs/multiqc.sif"
+	container:
+		container_image['multiqc_1.22.3']
 	shell:
 		"""
 		multiqc -o {params.out_multiqc} {params.in_fastqc} --force
