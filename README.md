@@ -86,9 +86,12 @@ for example:
 
     - Mitochondrial mode
 
-    -Force-calling mode
+    - Force-calling mode
 
-we used Tumor-only mode in this pipeline, in our config file, we used public PON vcf
+    we used Tumor-only mode in this pipeline, and we used public PON vcf stored in our config file
+
+- **FilterMutectCalls** (https://gatk.broadinstitute.org/hc/en-us/articles/360036856831-FilterMutectCalls): FilterMutectCalls applies filters to the raw output of Mutect2. 
+
 
 - **Pisces**: Illumina's variant caller
 - **RePlow**: Alternative variant caller

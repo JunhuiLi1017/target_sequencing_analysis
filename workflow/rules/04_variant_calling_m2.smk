@@ -29,7 +29,6 @@ rule variants_mutect2:
 		--pon {params.pon} \
 		-tumor {params.sample} \
 		--germline-resource {params.af_only_gnomad} \
-		--interval-padding 100 \
 		-O {output.o1} > {log.log} 2>&1
 		"""
 
