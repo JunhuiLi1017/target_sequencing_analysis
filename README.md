@@ -24,19 +24,12 @@ for example:
     --------------------------------
 
     @LH00160:653:2373YKLT4:8:1101:1380:1098 2:N:0:GATGTGTG+TAGCCATG
-
     ACCAAGGCC
-
-    \+
-
+    +
     9IIIIII9I
-
     @LH00160:653:2373YKLT4:8:1101:4309:1098 2:N:0:GATGTGTG+TAGCCATG
-
     CGGGTTGAG
-
-    \+
-
+    +
     IIIII9III
 
     --------------------------------
