@@ -1,0 +1,16 @@
+include: "rules/00_common.smk"
+include: "rules/01_qc.smk"
+include: "rules/02_map_reads.smk"
+include: "rules/03_map_stat.smk"
+include: "rules/04_variant_calling_m2.smk"
+include: "rules/04_variant_calling_pisces.smk"
+include: "rules/04_variant_calling_RePlow.smk"
+include: "rules/04_variant_calling_haptylecaller.smk"
+include: "rules/04_reads_count.smk"
+include: "rules/05_annotation.smk"
+include: "rules/06_variant_overlap.smk"
+include: "rules/07_report.smk"
+
+rule all:
+    input:
+        expand("{outpath}/02_map/06_reads_count/02_reads_count/{sample}.{ref_version}.reads_count.txt", outpath=Outpath, sample=Sample, ref_version=Ref_version)

@@ -51,6 +51,11 @@ rule annotate_clinvar_gnomad:
 		ref_version=config['ref_version'],
 		annovar_dir=config['annovar_dir'],
 		outputanno="{outpath}/03_variants/{caller}/05_annovar/{sample}",
+		protocol=lambda wildcards: (
+			"refGene,dbnsfp42a,clinvar_20240917,gnomad211_genome,gnomad211_exome"
+			if wildcards.ref_version == "hg19"
+			else "refGene,dbnsfp42a,clinvar_20240917,gnomad41_genome,gnomad41_exome"
+		),
 		command_mem=lambda wildcards, resources, threads: (resources.mem_mb * threads - 2000)
 	threads:
 		resource['resource']['high']['threads']
@@ -64,7 +69,7 @@ rule annotate_clinvar_gnomad:
 		-buildver {params.ref_version} \
 		-out {params.outputanno} \
 		-remove \
-		-protocol refGene,dbnsfp42a,clinvar_20240917,gnomad41_genome,gnomad41_exome \
+		-protocol {params.protocol} \
 		-operation g,f,f,f,f \
 		-nastring . \
 		-vcfinput
@@ -102,7 +107,7 @@ rule caller_merge_vcf:
 	log:
 		"{outpath}/03_variants/logs/{caller}/all.{caller}.merge.log"
 	params:
-		command_mem=lambda wildcards, resources, threads: (resources.mem_mb * threads - 2000)
+		is_single = lambda wildcards, input: len(input.passvcf) == 1
 	threads:
 		resource['resource']['high']['threads']
 	resources:
@@ -111,5 +116,12 @@ rule caller_merge_vcf:
 		"/pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/workflow/envs/bcftools_v1.10.2.sif"
 	shell:
 		'''
-		bcftools merge {input.passvcf} -Oz -o {output.merged_vcf} > {log} 2>&1 && tabix -p vcf {output.merged_vcf}
+		if [ "{params.is_single}" == "True" ]; then
+			echo "Single file detected. Using cp logic." > {log}
+			cp {input.passvcf} {output.merged_vcf} >> {log} 2>&1
+		else
+			echo "Multiple files detected. Using bcftools merge." > {log}
+			bcftools merge {input.passvcf} -Oz -o {output.merged_vcf} >> {log} 2>&1
+		fi
+		tabix -f -p vcf {output.merged_vcf} >> {log} 2>&1
 		'''

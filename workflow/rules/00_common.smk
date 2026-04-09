@@ -15,14 +15,24 @@ units = pd.read_table(config["units"], dtype = str).set_index(
     ["sample", "library", "flowlane"], drop = False
 )
 
+container_image = {}
+if "container" in config:
+    try:
+        with open(config["container"]) as f:
+            container_image = yaml.safe_load(f) or {}
+    except Exception as e:
+        print(f"Warning: Could not load container config from {config['container']}: {e}")
+        container_image = {}
+
 units['trim_front1'] = pd.to_numeric(units['trim_front1'], errors='coerce').fillna(0).astype(int)
 units['trim_front2'] = pd.to_numeric(units['trim_front2'], errors='coerce').fillna(0).astype(int)
 units['trim_tail1'] = pd.to_numeric(units['trim_tail1'], errors='coerce').fillna(0).astype(int)
 units['trim_tail2'] = pd.to_numeric(units['trim_tail2'], errors='coerce').fillna(0).astype(int)
 units['pcr_based'] = units['pcr_based'].map({'Yes': True, 'No': False, 'TRUE': True, 'FALSE': False, '1': True, '0': False, 'True': True, 'False': False}).astype(bool)
+units['is_umi'] = units['is_umi'].map({'Yes': True, 'No': False, 'TRUE': True, 'FALSE': False, '1': True, '0': False, 'True': True, 'False': False}).astype(bool)
+
 
 validate(units, schema = "../schemas/units.schema.yaml")
-
 
 sample_num=units['sample'].unique().tolist()
 Sample=units['sample']
@@ -134,3 +144,29 @@ def get_scatter_cmd(wildcards, input, output):
         elif short == "replow":
             lines.append(f"zcat {vcf} | grep -v '^#' | sed 's/;/\t/g' | cut -f 1,2,4,5,8,12 | sed 's/DP=//' | sed 's/EBAF=//g' | awk '{{print \"replow\\t\"$1\"_\"$2\"_\"$3\"_\"$4\"\t\"$5\"\t\"$6}}' >> {txt}")
     return " && ".join(lines)
+
+
+def get_dedup_files(wildcards):
+    # Retrieve the UMI status from your sample sheet (assumed to be a pandas DataFrame)
+    is_umi = units.loc[wildcards.sample, "is_umi"].any()
+    
+    # This logic forces Snakemake to pick the correct path
+    if is_umi == True:
+        return f"{wildcards.outpath}/02_map/03_rmdup/{wildcards.sample}/{wildcards.sample}.03_rmdup.umi.bam"
+    else:
+        return f"{wildcards.outpath}/02_map/03_rmdup/{wildcards.sample}/{wildcards.sample}.03_rmdup.gatk.bam"
+
+def get_bam_for_stats(wildcards):
+    # If we are looking at the sorted (not deduped) BAM, the path is standard
+    if wildcards.bam_type == "02_sort":
+        return f"{wildcards.outpath}/02_map/02_sort/{wildcards.sample}/{wildcards.sample}.02_sort.bam"
+    
+    # If we are looking at the deduped BAM, we must use the UMI/GATK logic
+    if wildcards.bam_type == "03_rmdup":
+        is_umi = units.loc[wildcards.sample, "is_umi"].any()
+        if is_umi:
+            # Match the output path from rule remove_dup_umi
+            return f"{wildcards.outpath}/02_map/03_rmdup/{wildcards.sample}/{wildcards.sample}.03_rmdup.umi.bam"
+        else:
+            # Match the output path from rule remove_dup_gatk
+            return f"{wildcards.outpath}/02_map/03_rmdup/{wildcards.sample}/{wildcards.sample}.03_rmdup.gatk.bam"

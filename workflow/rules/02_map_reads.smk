@@ -12,7 +12,9 @@ rule map_reads:
 	threads:
 		resource['resource']['high']['threads']
 	resources:
-		mem_mb=resource['resource']['high']['mem_mb']
+		mem_mb=resource['resource']['very_high']['mem_mb']
+	#container:
+	#	container_image["bwa_samtools_0.7.17"]
 	#container:
 	#	"http://depot.galaxyproject.org/singularity/bwa:0.7.17--hed695b0_6"
 	shell:
@@ -49,7 +51,8 @@ rule merge_and_sort:
 		merged_bam=lambda wildcards, input: f"{outpath}/02_map/02_sort/{wildcards.sample}/{wildcards.sample}.merged.bam"
 		if len(input) > 1 else input[0],
 		command_mem=lambda wildcards, resources, threads: (resources.mem_mb * threads - 4000)
-	#container:
+	container:
+		container_image["sambamba_1.0.1"]
 	#	"http://depot.galaxyproject.org/singularity/sambamba:1.0.1--he614052_4"
 	shell:
 		"""
@@ -67,14 +70,14 @@ rule merge_and_sort:
 		{params.merged_bam} > {log} 2>&1
 		sambamba flagstat {output.bam}
 		sambamba index {output.bam}
-		samtools index {output.bam}
 		""" 
 
-rule remove_dup:
+rule remove_dup_umi:
 	input:
-		bam="{outpath}/02_map/02_sort/{sample}/{sample}.02_sort.bam"
+		bam="{outpath}/02_map/02_sort/{sample}/{sample}.02_sort.bam",
+		bai="{outpath}/02_map/02_sort/{sample}/{sample}.02_sort.bam.bai"
 	output:
-		bam=temp("{outpath}/02_map/03_rmdup/{sample}/{sample}.03_rmdup.bam")
+		bam=temp("{outpath}/02_map/03_rmdup/{sample}/{sample}.03_rmdup.umi.bam")
 	log:
 		"{outpath}/02_map/02_map/logs/{sample}/{sample}.remove_dup.log"
 	params:
@@ -85,7 +88,8 @@ rule remove_dup:
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
 	container:
-		"umi_tools:1.1.6--py39hbcbf7aa_0"
+		container_image["umi_tools_1.1.5"]
+		#"umi_tools:1.1.6--py39hbcbf7aa_0"
 	shell:
 		"""
 		#source ~/anaconda3/etc/profile.d/conda.sh; conda activate umi_tools116
@@ -95,14 +99,49 @@ rule remove_dup:
 			--stdout={output.bam} \
 			--umi-separator={params.umi_separator} \
 			--paired >> {log} 2>&1
-			
-		samtools index {output.bam}
 		#conda deactivate
+		"""
+
+rule remove_dup_gatk:
+	input:
+		bam="{outpath}/02_map/02_sort/{sample}/{sample}.02_sort.bam",
+		bai="{outpath}/02_map/02_sort/{sample}/{sample}.02_sort.bam.bai"
+	output:
+		bam=temp("{outpath}/02_map/03_rmdup/{sample}/{sample}.03_rmdup.gatk.bam"),
+		mtx="{outpath}/02_map/03_rmdup/{sample}/{sample}.sort.rmdup.matrix"
+	log:
+		"{outpath}/02_map/02_map/logs/{sample}/{sample}.remove_dup.log"
+	params:
+		dedup=lambda wildcards: (
+			f"--REMOVE_DUPLICATES true" 
+			if units[units['sample'] == wildcards.sample]['pcr_based'].any() 
+			else "--REMOVE_DUPLICATES false --REMOVE_SEQUENCING_DUPLICATES true --OPTICAL_DUPLICATE_PIXEL_DISTANCE 2500"
+		),
+		tmpdir="{outpath}/02_map/03_rmdup/{sample}/tmpdir_{sample}",
+		input_args=lambda wildcards, input: " ".join(f"--INPUT {bam}" for bam in input.bam),
+		command_mem=lambda wildcards, resources, threads: (resources.mem_mb * threads - 8000)
+	threads:
+		resource['resource']['high']['threads']
+	resources:
+		mem_mb=resource['resource']['high']['mem_mb']
+		#mem_mb=5000
+	container:
+		container_image["gatk_4.6.1.0"]
+	shell:
+		"""
+		mkdir -p {params.tmpdir}
+		gatk --java-options "-Xms{params.command_mem}m -XX:ParallelGCThreads={threads}" \
+		MarkDuplicates --INPUT {input.bam} \
+		--METRICS_FILE {output.mtx} \
+		--OUTPUT {output.bam} \
+		{params.dedup} \
+		--TMP_DIR {params.tmpdir} \
+		--CREATE_INDEX true > {log} 2>&1
 		"""
 
 rule base_recalibrator:
 	input:
-		bam="{outpath}/02_map/03_rmdup/{sample}/{sample}.03_rmdup.bam"
+		bam=get_dedup_files
 	output:
 		o1="{outpath}/02_map/04_bqsr/{sample}/{sample}.recal_data.table"
 	log:
@@ -119,27 +158,51 @@ rule base_recalibrator:
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
 	container:
-		container_image['gatk4.6.1.0']
+		container_image["gatk_4.6.1.0"]
 	shell:
 		"""
-		source ~/anaconda3/etc/profile.d/conda.sh; conda activate gatk4.6.1.0
-		java -Xms{params.command_mem}m -XX:ParallelGCThreads={threads} \
-		-jar {params.gatk} BaseRecalibrator \
-		-I {input} \
+		gatk --java-options "-Xms{params.command_mem}m -XX:ParallelGCThreads={threads}" \
+		BaseRecalibrator \
+		-I {input.bam} \
 		-O {output.o1} \
 		-R {params.ref} \
 		--known-sites {params.dbsnp138} \
 		--known-sites {params.g1000_known_indels} \
 		--known-sites {params.mills_and_1000g} > {log} 2>&1
-		conda deactivate
 		"""
 
 rule apply_bqsr:
 	input:
-		bam="{outpath}/02_map/03_rmdup/{sample}/{sample}.03_rmdup.bam",
+		bam=get_dedup_files,
 		recal_table="{outpath}/02_map/04_bqsr/{sample}/{sample}.recal_data.table"
 	output:
-		bam="{outpath}/02_map/05_apply_bqsr/{sample}/{sample}.bam",
+		bam="{outpath}/02_map/05_apply_bqsr/{sample}/{sample}.bam"
+	log:
+		"{outpath}/02_map/logs/{sample}.apply_bqsr.log"
+	params:
+		ref=config['reference'],
+		gatk=config['gatk_current_using'],
+		command_mem=lambda wildcards, resources, threads: (resources.mem_mb * threads - 4000)
+	threads:
+		resource['resource']['high']['threads']
+	resources:
+		mem_mb=resource['resource']['high']['mem_mb']
+	container:
+		container_image["gatk_4.6.1.0"]
+	shell:
+		"""
+		gatk --java-options "-Xms{params.command_mem}m -XX:ParallelGCThreads={threads}" \
+		ApplyBQSR \
+		-I {input.bam} \
+		-O {output.bam} \
+		-R {params.ref} \
+		--bqsr-recal-file {input.recal_table} > {log} 2>&1
+		"""
+
+rule apply_bqsr_index:
+	input:
+		bam="{outpath}/02_map/05_apply_bqsr/{sample}/{sample}.bam"
+	output:
 		bai="{outpath}/02_map/05_apply_bqsr/{sample}/{sample}.bam.bai",
 		stats="{outpath}/02_map/07_summary/stats/{sample}.samtools.stats.txt",
 		idxstats="{outpath}/02_map/07_summary/idxstats/{sample}.samtools.idxstats.txt",
@@ -155,21 +218,13 @@ rule apply_bqsr:
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
 	container:
-		container_image['gatk4.6.1.0']
+		container_image["samtools_1.20"]
 	shell:
 		"""
-		source ~/anaconda3/etc/profile.d/conda.sh; conda activate gatk4.6.1.0
-		java -Xms{params.command_mem}m -XX:ParallelGCThreads={threads} \
-		-jar {params.gatk} ApplyBQSR \
-		-I {input.bam} \
-		-O {output.bam} \
-		-R {params.ref} \
-		--bqsr-recal-file {input.recal_table} > {log} 2>&1
-		samtools stats {output.bam} > {output.stats}
-		samtools idxstats {output.bam} > {output.idxstats}
-		samtools flagstat {output.bam} > {output.flagstat}
-		samtools index {output.bam}
-		conda deactivate
+		samtools stats {input.bam} > {output.stats}
+		samtools idxstats {input.bam} > {output.idxstats}
+		samtools flagstat {input.bam} > {output.flagstat}
+		samtools index {input.bam}
 		"""
 
 rule multiqc_stats_bqsr:

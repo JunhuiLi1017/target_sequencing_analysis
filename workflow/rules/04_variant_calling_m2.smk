@@ -19,12 +19,10 @@ rule variants_mutect2:
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
 	container:
-		"../envs/gatk4.6.1.0.sif"
+		container_image["gatk_4.6.1.0"]
 	shell:
 		"""
-		source ~/anaconda3/etc/profile.d/conda.sh; conda activate gatk4.6.1.0
-		java -Xms{params.command_mem}m -XX:ParallelGCThreads={threads} \
-		-jar {params.gatk} \
+		gatk --java-options "-Xms{params.command_mem}m -XX:ParallelGCThreads={threads}" \
 		Mutect2 \
 		-R {params.ref} \
 		-I {input} \
@@ -33,7 +31,6 @@ rule variants_mutect2:
 		--germline-resource {params.af_only_gnomad} \
 		--interval-padding 100 \
 		-O {output.o1} > {log.log} 2>&1
-		conda deactivate
 		"""
 
 rule filter_mutectcalls:
@@ -54,15 +51,12 @@ rule filter_mutectcalls:
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
 	container:
-		"../envs/gatk4.6.1.0.sif"
+		container_image["gatk_4.6.1.0"]
 	shell:
 		'''
-		source ~/anaconda3/etc/profile.d/conda.sh; conda activate gatk4.6.1.0
-		java -Xms{params.command_mem}m -XX:ParallelGCThreads={threads} \
-		-jar {params.gatk} \
+		gatk --java-options "-Xms{params.command_mem}m -XX:ParallelGCThreads={threads}" \
 		FilterMutectCalls \
 		-R {params.ref} \
 		-V {input.vcf} \
 		-O {output.vcf} > {log.log} 2>&1
-		conda deactivate
 		'''

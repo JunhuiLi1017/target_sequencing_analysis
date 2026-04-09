@@ -51,9 +51,9 @@ rule merge_variant:
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
 	container:
-		"/pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/workflow/envs/bcftools_v1.10.2.sif"
+		container_image["bcftools_1.9"]
 	shell:
 		"""
 		bcftools concat -a {input.vcf} | bcftools sort | bgzip > {output.vcf}
-		tabix -p vcf {output.vcf}
+		bcftools index {output.vcf}
 		"""

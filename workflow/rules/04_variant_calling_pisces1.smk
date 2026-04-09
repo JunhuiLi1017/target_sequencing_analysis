@@ -3,31 +3,24 @@ rule variants_pisces:
         bam="{outpath}/02_map/05_apply_bqsr/{sample}/{sample}.bam",
         bai="{outpath}/02_map/05_apply_bqsr/{sample}/{sample}.bam.bai"
     output:
-        # We define the specific expected VCF path
         vcf=temp("{outpath}/03_variants/02_pisces/01_raw/{sample}.vcf")
     log:
         "{outpath}/03_variants/logs/{sample}.variants_pisces.log"
     params:
-        # Create a sample-specific sub-folder to avoid directory collisions
-        tmp_outdir=lambda wildcards: f"{wildcards.outpath}/03_variants/02_pisces/01_raw/{wildcards.sample}_tmp",
-        ref_dir=config['genomefolders']
+        outdir="{outpath}/03_variants/02_pisces/01_raw/",
+        ref=config['genomefolders']
     threads:
         resource['resource']['medium']['threads']
     resources:
         mem_mb=resource['resource']['medium']['mem_mb']
+    container:
+        container_image["pisces_5.2.10"]
     shell:
         """
-        mkdir -p {params.tmp_outdir}
-        set +u
-        module load pisces/5.2.10
-        pisces -g {params.ref_dir} -b {input.bam} -CallMNVs false -gVCF false -o {params.tmp_outdir} > {log} 2>&1
-        set -u
-
-        # Move it to the location Snakemake expects.
-        mv {params.tmp_outdir}/{wildcards.sample}.vcf {output.vcf}
-
-        # Cleanup tmp dir
-        rm -rf {params.tmp_outdir}
+        #set +u
+        #module load pisces/5.2.10
+        pisces -g {params.ref} -b {input.bam} -CallMNVs false -gVCF false -o {params.outdir} > {log} 2>&1
+        #set -u
         """
 
 rule variants_pisces_index:
@@ -44,6 +37,5 @@ rule variants_pisces_index:
         mem_mb=resource['resource']['medium']['mem_mb']
     shell:
         """
-        bgzip -c {input.vcf} > {output.gz} 2> {log}
-        tabix -p vcf {output.gz} 2>> {log}
+        bgzip -c {input.vcf} > {output.gz} && tabix {output.gz}
         """

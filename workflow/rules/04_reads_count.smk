@@ -8,14 +8,14 @@ rule samtools_mpileup:
 		log="{outpath}/02_map/logs/{sample}.{ref_version}.06_reads_count.log"
 	params:
 		ref=config['reference'],
-		bed=config['FinalRegion_bed'],
+		bed=config['MosaicRegion'],
 		command_mem=lambda wildcards, resources, threads: (resources.mem_mb * threads - 2000)
 	threads:
 		resource['resource']['high']['threads']
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
 	container:
-		"../envs/samtools.sif"
+		container_image["samtools_1.20"]
 	shell:
 		"""
 		samtools mpileup -l {params.bed} -f {params.ref} {input.bam} > {output.mpileup} 2> {log}
@@ -29,14 +29,14 @@ rule reads_count:
 	log:
 		"{outpath}/02_map/logs/{sample}.{ref_version}.reads_count.log"
 	params:
-		bed=config['FinalRegion_bed'],
-		reads_count="/pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/workflow/bin/reads_count_v1.0.py"
+		bed=config['MosaicRegion'],
+		reads_count="/pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/workflow/bin/reads_count_v1.3.py"
 	threads:
 		resource['resource']['high']['threads']
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
 	container:
-		"../envs/python.sif"
+		container_image["terra_py_tools"]
 	shell:
 		"""
 		python {params.reads_count} --input {input.mpileup} --bed {params.bed} --output {output}

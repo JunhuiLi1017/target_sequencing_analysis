@@ -26,7 +26,7 @@ rule report:
 	params:
 		report_ipynb = "/pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/workflow/lib/report.ipynb"
 	container:
-		"../envs/r.sif"
+		container_image["jupyter"]
 	shell:
 		'''
 		jupyter nbconvert --to html --output {output.o1} {params.report_ipynb} > {log} 2>&1

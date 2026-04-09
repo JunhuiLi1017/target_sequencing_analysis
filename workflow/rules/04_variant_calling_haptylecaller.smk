@@ -16,18 +16,15 @@ rule variants_haplotypecaller:
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
 	container:
-		container_image["gatk4.6.1.0"]
+		container_image["gatk_4.6.1.0"]
 	shell:
 		"""
-		source ~/anaconda3/etc/profile.d/conda.sh; conda activate gatk4.6.1.0
-		java -Xms{params.command_mem}m -XX:ParallelGCThreads={threads} \
-		-jar {params.gatk} \
+		gatk --java-options "-Xms{params.command_mem}m -XX:ParallelGCThreads={threads}" \
 		HaplotypeCaller \
 		-R {params.ref} \
 		-I {input} \
 		-ERC GVCF \
 		-O {output.o1} > {log.log} 2>&1
-		conda deactivate
 		"""
 
 rule sample_name_map:
@@ -45,7 +42,7 @@ rule sample_name_map:
 	resources:
 		mem_mb=resource['resource']['low']['mem_mb']
 	container:
-		container_image["gatk4.6.1.0"]
+		container_image["gatk_4.6.1.0"]
 	shell:
 		"""
 		echo "{params.sample_list}" > {output}
@@ -63,7 +60,7 @@ rule genomics_db_import:
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
 	container:
-		container_image["gatk4.6.1.0"]
+		container_image["gatk_4.6.1.0"]
 	params:
 		ref=config['reference'],
 		gatk=config['gatk_current_using'],
@@ -75,9 +72,8 @@ rule genomics_db_import:
 	shell:
 		"""
 		mkdir -p {params.tmp_dir}
-		source ~/anaconda3/etc/profile.d/conda.sh; conda activate gatk4.6.1.0
-		java -Xms{params.command_mem}m -XX:ParallelGCThreads={threads} \
-		-jar {params.gatk} \
+
+		gatk --java-options "-Xms{params.command_mem}m -XX:ParallelGCThreads={threads}" \
 		GenomicsDBImport \
 		--sample-name-map {input} \
 		--genomicsdb-workspace-path {output.db} \
@@ -86,7 +82,6 @@ rule genomics_db_import:
 		-R {params.ref} \
 		--max-num-intervals-to-import-in-parallel 25 \
 		--intervals {params.intervals} > {log} 2>&1
-		conda deactivate
 		"""
 
 # Rule to perform joint genotyping on GenomicsDB workspace
@@ -103,22 +98,19 @@ rule genotype_gvcfs:
 		gatk=config['gatk_current_using'],
 		command_mem=lambda wildcards, resources, threads: (resources.mem_mb * threads - 2000)
 	threads:
-		resource['resource']['very_high']['threads']
+		resource['resource']['high']['threads']
 	resources:
-		mem_mb=resource['resource']['very_high']['mem_mb']
+		mem_mb=resource['resource']['high']['mem_mb']
 	container:
-		container_image["gatk4.6.1.0"]
+		container_image["gatk_4.6.1.0"]
 	shell:
 		"""
-		source ~/anaconda3/etc/profile.d/conda.sh; conda activate gatk4.6.1.0
-		java -Xms{params.command_mem}m -XX:ParallelGCThreads={threads} \
-		-jar {params.gatk} \
+		gatk --java-options "-Xms{params.command_mem}m -XX:ParallelGCThreads={threads}" \
 		GenotypeGVCFs \
 		-R {params.ref} \
 		-V gendb://{input.db} \
 		-O {output.vcf} \
 		--include-non-variant-sites false > {log} 2>&1
-		conda deactivate
 		"""
 
 # Rule to merge per-chromosome VCFs into a single cohort VCF
@@ -136,20 +128,17 @@ rule merge_vcfs:
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
 	container:
-		container_image["gatk4.6.1.0"]
+		container_image["gatk_4.6.1.0"]
 	params:
 		gatk=config['gatk_current_using'],
 		vcf_list=lambda wildcards, input: " ".join([f"-I {vcf}" for vcf in input.vcfs]),
 		command_mem=lambda wildcards, resources, threads: (resources.mem_mb * threads - 2000)
 	shell:
 		"""
-		source ~/anaconda3/etc/profile.d/conda.sh; conda activate gatk4.6.1.0
-		java -Xms{params.command_mem}m -XX:ParallelGCThreads={threads} \
-		-jar {params.gatk} \
+		gatk --java-options "-Xms{params.command_mem}m -XX:ParallelGCThreads={threads}" \
 		MergeVcfs \
 		{params.vcf_list} \
 		-O {output.vcf} > {log} 2>&1
-		conda deactivate
 		"""
 
 # Rule to perform Variant Quality Score Recalibration (VQSR) for SNPs
@@ -176,12 +165,10 @@ rule variant_recalibrator_snp:
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
 	container:
-		container_image["gatk4.6.1.0"]
+		container_image["gatk_4.6.1.0"]
 	shell:
 		"""
-		source ~/anaconda3/etc/profile.d/conda.sh; conda activate gatk4.6.1.0
-		java -Xms{params.command_mem}m -XX:ParallelGCThreads={threads} \
-		-jar {params.gatk} \
+		gatk --java-options "-Xms{params.command_mem}m -XX:ParallelGCThreads={threads}" \
 		VariantRecalibrator \
 			-R {params.ref} \
 			-V {input.vcf} \
@@ -196,7 +183,6 @@ rule variant_recalibrator_snp:
 			--rscript-file {output.rscript} \
 			--dont-run-rscript \
 			--tranche 100.0 --tranche 99.9 --tranche 99.5 --tranche 99.0 --tranche 90.0 > {log} 2>&1
-			conda deactivate
 		"""
 
 # Rule to perform VQSR for INDELs
@@ -221,12 +207,10 @@ rule variant_recalibrator_indel:
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
 	container:
-		"../envs/gatk.sif"
+		container_image["gatk_4.6.1.0"]
 	shell:
 		"""
-		source ~/anaconda3/etc/profile.d/conda.sh; conda activate gatk4.6.1.0
-		java -Xms{params.command_mem}m -XX:ParallelGCThreads={threads} \
-		-jar {params.gatk} \
+		gatk --java-options "-Xms{params.command_mem}m -XX:ParallelGCThreads={threads}" \
 		VariantRecalibrator \
 			-R {params.ref} \
 			-V {input.vcf} \
@@ -240,7 +224,6 @@ rule variant_recalibrator_indel:
 			--dont-run-rscript \
 			--tranche 100.0 --tranche 99.9 --tranche 99.5 --tranche 99.0 --tranche 90.0 \
 			--max-gaussians 4 > {log} 2>&1
-			conda deactivate
 		"""
 
 # Rule to apply VQSR for SNPs
@@ -264,12 +247,10 @@ rule apply_vqsr_snp:
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
 	container:
-		"../envs/gatk.sif"
+		container_image["gatk_4.6.1.0"]
 	shell:
 		"""
-		source ~/anaconda3/etc/profile.d/conda.sh; conda activate gatk4.6.1.0
-		java -Xms{params.command_mem}m -XX:ParallelGCThreads={threads} \
-		-jar {params.gatk} \
+		gatk --java-options "-Xms{params.command_mem}m -XX:ParallelGCThreads={threads}" \
 		ApplyVQSR \
 			-R {params.ref} \
 			-V {input.vcf} \
@@ -278,7 +259,6 @@ rule apply_vqsr_snp:
 			--tranches-file {input.tranches} \
 			-mode SNP \
 			--truth-sensitivity-filter-level 99.9 > {log} 2>&1
-		conda deactivate
 		"""
 
 # Rule to apply VQSR for INDELs
@@ -302,12 +282,10 @@ rule apply_vqsr_indel:
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
 	container:
-		"../envs/gatk.sif"
+		container_image["gatk_4.6.1.0"]
 	shell:
 		"""
-		source ~/anaconda3/etc/profile.d/conda.sh; conda activate gatk4.6.1.0
-		java -Xms{params.command_mem}m -XX:ParallelGCThreads={threads} \
-		-jar {params.gatk} \
+		gatk --java-options "-Xms{params.command_mem}m -XX:ParallelGCThreads={threads}" \
 		ApplyVQSR \
 			-R {params.ref} \
 			-V {input.vcf} \
@@ -316,103 +294,60 @@ rule apply_vqsr_indel:
 			--tranches-file {input.tranches} \
 			-mode INDEL \
 			--truth-sensitivity-filter-level 99.9 > {log} 2>&1
-		conda deactivate
 		"""
 
-rule split_multiallelic_germline:
+rule split_multiallelic_and_filter_germline_nonpass:
 	input:
 		vcf="{outpath}/03_variants_germline/04_haplotypecaller/06_apply_vqsr/all.recalibrated.vcf.gz",
 		tbi="{outpath}/03_variants_germline/04_haplotypecaller/06_apply_vqsr/all.recalibrated.vcf.gz.tbi"
 	output:
-		vcf="{outpath}/03_variants_germline/04_haplotypecaller/07_split_mulalle/all.recalibrated.split_mulalle.vcf.gz",
-		tbi="{outpath}/03_variants_germline/04_haplotypecaller/07_split_mulalle/all.recalibrated.split_mulalle.vcf.gz.tbi"
+		vcf="{outpath}/03_variants_germline/04_haplotypecaller/07_VQSRTranche/all.recalibrated.VQSRTranche.vcf.gz",
+		tbi="{outpath}/03_variants_germline/04_haplotypecaller/07_VQSRTranche/all.recalibrated.VQSRTranche.vcf.gz.tbi"
 	log:
-		"{outpath}/03_variants_germline/logs/all.split_multiallelic.log"
+		"{outpath}/03_variants/logs/all.04_haplotypecaller.split_and_filter.07_VQSRTranche.log"
 	threads:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
 	container:
-		"../envs/bcftools.sif"
+		container_image["bcftools_1.9"]
 	shell:
 		'''
-		source ~/anaconda3/etc/profile.d/conda.sh; conda activate bcftools
-		bcftools norm -m - -o {output.vcf} -Oz {input.vcf} > {log} 2>&1
-		tabix -p vcf {output.vcf}
-		conda deactivate
+		bcftools norm -m - {input.vcf} | \
+		bcftools filter -i 'FILTER!="PASS"' -Oz -o {output.vcf} > {log} 2>&1
+		bcftools index -t {output.vcf}
 		'''
 
-rule pass_filter_germline:
+rule split_multiallelic_and_filter_germline_pass:
 	input:
-		vcf="{outpath}/03_variants_germline/04_haplotypecaller/07_split_mulalle/all.recalibrated.split_mulalle.vcf.gz",
-		tbi="{outpath}/03_variants_germline/04_haplotypecaller/07_split_mulalle/all.recalibrated.split_mulalle.vcf.gz.tbi"
+		vcf="{outpath}/03_variants_germline/04_haplotypecaller/06_apply_vqsr/all.recalibrated.vcf.gz",
+		tbi="{outpath}/03_variants_germline/04_haplotypecaller/06_apply_vqsr/all.recalibrated.vcf.gz.tbi"
 	output:
 		vcf="{outpath}/03_variants_germline/04_haplotypecaller/08_pass/all.recalibrated.pass.vcf.gz",
 		tbi="{outpath}/03_variants_germline/04_haplotypecaller/08_pass/all.recalibrated.pass.vcf.gz.tbi"
 	log:
-		"{outpath}/03_variants/logs/all.04_haplotypecaller.pass.log"
+		"{outpath}/03_variants/logs/all.04_haplotypecaller.split_and_filter.log"
 	threads:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
 	container:
-		"../envs/bcftools.sif"
+		container_image["bcftools_1.9"]
 	shell:
 		'''
-		source ~/anaconda3/etc/profile.d/conda.sh; conda activate bcftools
-		bcftools filter -i 'FILTER="PASS"' -o {output.vcf} -Oz {input.vcf} > {log} 2>&1
-		tabix -p vcf {output.vcf}
-		conda deactivate
+		bcftools norm -m - {input.vcf} | \
+		bcftools filter -i 'FILTER="PASS"' -Oz -o {output.vcf} > {log} 2>&1
+		bcftools index -t {output.vcf}
 		'''
 
-rule split_vcf_to_each_sample:
+rule split_filter_and_leftalign_sample:
 	input:
 		vcf="{outpath}/03_variants_germline/04_haplotypecaller/08_pass/all.recalibrated.pass.vcf.gz",
 		tbi="{outpath}/03_variants_germline/04_haplotypecaller/08_pass/all.recalibrated.pass.vcf.gz.tbi"
 	output:
-		vcf="{outpath}/03_variants_germline/04_haplotypecaller/09_individual_vcf/{sample}.recalibrated.pass.vcf.gz"
+		vcf="{outpath}/03_variants_germline/04_haplotypecaller/11_left_alignment_pass/{sample}.recalibrated.left_align.vcf.gz"
 	log:
-		"{outpath}/03_variants_germline/09_individual.{sample}.vcf.clinvar.log"
-	params:
-		command_mem=lambda wildcards, resources, threads: (resources.mem_mb * threads - 2000)
-	threads:
-		resource['resource']['medium']['threads']
-	resources:
-		mem_mb=resource['resource']['medium']['mem_mb']
-	container:
-		"../envs/bcftools.sif"
-	shell:
-		'''
-		bcftools view -s {wildcards.sample} -Oz -o {output.vcf} {input.vcf}
-		'''
-
-rule filter_vcf_geno_indi:
-	input:
-		vcf="{outpath}/03_variants_germline/04_haplotypecaller/09_individual_vcf/{sample}.recalibrated.pass.vcf.gz"
-	output:
-		vcf="{outpath}/03_variants_germline/04_haplotypecaller/10_geno_filter/{sample}.recalibrated.filter_geno.vcf.gz"
-	log:
-		"{outpath}/03_variants_germline/10_geno_filter.{sample}.vcf.clinvar.log"
-	params:
-		command_mem=lambda wildcards, resources, threads: (resources.mem_mb * threads - 2000)
-	threads:
-		resource['resource']['medium']['threads']
-	resources:
-		mem_mb=resource['resource']['medium']['mem_mb']
-	container:
-		"../envs/bcftools.sif"
-	shell:
-		'''
-		bcftools view -i 'GT!="0/0" && GT!="./." && GT!="0|0"' -f PASS -Oz -o {output.vcf} {input.vcf}
-		'''
-
-rule left_alignment_snp:
-	input:
-		vcf="{outpath}/03_variants_germline/04_haplotypecaller/10_geno_filter/{sample}.recalibrated.filter_geno.vcf.gz"
-	output:
-		vcf="{outpath}/03_variants_germline/04_haplotypecaller/11_left_alignment/{sample}.recalibrated.left_align.vcf.gz"
-	log:
-		"{outpath}/03_variants_germline/11_left_alignment.{sample}.vcf.clinvar.log"
+		"{outpath}/03_variants_germline/11_left_alignment_pass.{sample}.vcf.clinvar.log"
 	params:
 		ref=config['reference'],
 		command_mem=lambda wildcards, resources, threads: (resources.mem_mb * threads - 2000)
@@ -421,51 +356,103 @@ rule left_alignment_snp:
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
 	container:
-		"../envs/bcftools.sif"
+		container_image["bcftools_1.9"]
 	shell:
 		'''
-		bcftools norm -f {param.ref} -Oz -o {output.vcf} {input.vcf}
+		bcftools view -s {wildcards.sample} {input.vcf} | \
+		bcftools view -i 'GT!="0/0" && GT!="./." && GT!="0|0" && GT!=".|."' -f PASS | \
+		bcftools norm -f {params.ref} -Oz -o {output.vcf} > {log} 2>&1
 		'''
 
-rule add_af:
+rule split_filter_and_leftalign_sample_VQSRTranche:
 	input:
-		vcf="{outpath}/03_variants_germline/04_haplotypecaller/11_left_alignment/{sample}.recalibrated.left_align.vcf.gz"
+		vcf="{outpath}/03_variants_germline/04_haplotypecaller/07_VQSRTranche/all.recalibrated.VQSRTranche.vcf.gz",
+		tbi="{outpath}/03_variants_germline/04_haplotypecaller/07_VQSRTranche/all.recalibrated.VQSRTranche.vcf.gz.tbi"
 	output:
-		vcf="{outpath}/03_variants_germline/04_haplotypecaller/12_add_af/{sample}.recalibrated.add_af.vcf.gz"
+		vcf="{outpath}/03_variants_germline/04_haplotypecaller/10_left_alignment_VQSRTranche/{sample}.recalibrated.left_align_VQSRTranche.vcf.gz"
 	log:
-		"{outpath}/03_variants_germline/12_add_af.{sample}.vcf.clinvar.log"
+		"{outpath}/03_variants_germline/10_left_alignment_VQSRTranche.{sample}.vcf.clinvar.log"
 	params:
-		add_af_to_vcf="",
+		ref=config['reference'],
 		command_mem=lambda wildcards, resources, threads: (resources.mem_mb * threads - 2000)
 	threads:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
 	container:
-		"../envs/bcftools.sif"
+		container_image["bcftools_1.9"]
 	shell:
 		'''
-		python {params.add_af_to_vcf} -i {input.vcf} -o {output.vcf}
+		bcftools view -s {wildcards.sample} {input.vcf} | \
+		bcftools view -i 'GT!="0/0" && GT!="./." && GT!="0|0" && GT!=".|."' | \
+		bcftools norm -f {params.ref} -Oz -o {output.vcf} > {log} 2>&1
+		'''
+
+rule add_af:
+	input:
+		vcf="{outpath}/03_variants_germline/04_haplotypecaller/11_left_alignment_pass/{sample}.recalibrated.left_align.vcf.gz"
+	output:
+		vcf="{outpath}/03_variants_germline/04_haplotypecaller/12_add_af_pass/{sample}.recalibrated.add_af.vcf.gz"
+	log:
+		"{outpath}/03_variants_germline/12_add_af_pass.{sample}.vcf.clinvar.log"
+	params:
+		add_af_to_vcf="/pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/workflow/bin/add_af_to_vcf.py",
+		command_mem=lambda wildcards, resources, threads: (resources.mem_mb * threads - 2000)
+	threads:
+		resource['resource']['medium']['threads']
+	resources:
+		mem_mb=resource['resource']['medium']['mem_mb']	
+	container:
+		container_image["python_add_af_to_vcf"]
+	shell:
+		'''
+		python {params.add_af_to_vcf} -i {input.vcf} -o {output.vcf} > {log} 2>&1
+		'''
+
+rule add_af_VQSRTranche:
+	input:
+		vcf="{outpath}/03_variants_germline/04_haplotypecaller/10_left_alignment_VQSRTranche/{sample}.recalibrated.left_align_VQSRTranche.vcf.gz"
+	output:
+		vcf="{outpath}/03_variants_germline/04_haplotypecaller/12_add_af_VQSRTranche/{sample}.recalibrated.add_af_VQSRTranche.vcf.gz"
+	log:
+		"{outpath}/03_variants_germline/12_add_af_pass.{sample}.vcf.clinvar_VQSRTranche.log"
+	params:
+		add_af_to_vcf="/pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/workflow/bin/add_af_to_vcf.py",
+		command_mem=lambda wildcards, resources, threads: (resources.mem_mb * threads - 2000)
+	threads:
+		resource['resource']['medium']['threads']
+	resources:
+		mem_mb=resource['resource']['medium']['mem_mb']	
+	container:
+		container_image["python_add_af_to_vcf"]
+	shell:
+		'''
+		python {params.add_af_to_vcf} -i {input.vcf} -o {output.vcf} > {log} 2>&1
 		'''
 
 rule annotate_clinvar_gnomad_germline:
 	input:
-		vcf="{outpath}/03_variants_germline/04_haplotypecaller/12_add_af/{sample}.recalibrated.add_af.vcf.gz"
+		vcf="{outpath}/03_variants_germline/04_haplotypecaller/12_add_af_pass/{sample}.recalibrated.add_af.vcf.gz"
 	output:
-		txt="{outpath}/03_variants_germline/04_haplotypecaller/13_annovar/{sample}.{ref_version}_multianno.txt"
+		txt="{outpath}/03_variants_germline/04_haplotypecaller/13_annovar_pass/{sample}.{ref_version}_multianno.txt"
 	log:
 		"{outpath}/03_variants_germline/{sample}.{ref_version}.clinvar.log"
 	params:
 		ref_version=config['ref_version'],
 		annovar_dir=config['annovar_dir'],
-		outputanno="{outpath}/03_variants_germline/04_haplotypecaller/13_annovar/{sample}",
+		outputanno="{outpath}/03_variants_germline/04_haplotypecaller/13_annovar_pass/{sample}",
+		protocol=lambda wildcards: (
+			"refGene,dbnsfp42a,clinvar_20240917,gnomad211_genome,gnomad211_exome"
+			if wildcards.ref_version == "hg19"
+			else "refGene,dbnsfp42a,clinvar_20240917,gnomad41_genome,gnomad41_exome"
+		),
 		command_mem=lambda wildcards, resources, threads: (resources.mem_mb * threads - 2000)
 	threads:
 		resource['resource']['high']['threads']
 	resources:
 		mem_mb=resource['resource']['high']['mem_mb']
 	container:
-		"../envs/perl.sif"
+		container_image["terra_perl_anno"]
 	shell:
 		'''
 		perl {params.annovar_dir}/table_annovar.pl \
@@ -474,15 +461,69 @@ rule annotate_clinvar_gnomad_germline:
 		-buildver {params.ref_version} \
 		-out {params.outputanno} \
 		-remove \
-		-protocol refGene,dbnsfp42a,clinvar_20240917,gnomad41_genome,gnomad41_exome \
+		-protocol {params.protocol} \
 		-operation g,f,f,f,f \
 		-nastring . \
 		-vcfinput
 		'''
 
+rule annotate_clinvar_gnomad_germline_VQSRTranche:
+	input:
+		vcf="{outpath}/03_variants_germline/04_haplotypecaller/12_add_af_VQSRTranche/{sample}.recalibrated.add_af_VQSRTranche.vcf.gz"
+	output:
+		txt="{outpath}/03_variants_germline/04_haplotypecaller/13_annovar_VQSRTranche/{sample}.{ref_version}_multianno.txt"
+	log:
+		"{outpath}/03_variants_germline/{sample}.{ref_version}.clinvarVQSRTranche.log"
+	params:
+		ref_version=config['ref_version'],
+		annovar_dir=config['annovar_dir'],
+		outputanno="{outpath}/03_variants_germline/04_haplotypecaller/13_annovar_VQSRTranche/{sample}",
+		protocol=lambda wildcards: (
+			"refGene,dbnsfp42a,clinvar_20240917,gnomad211_genome,gnomad211_exome"
+			if wildcards.ref_version == "hg19"
+			else "refGene,dbnsfp42a,clinvar_20240917,gnomad41_genome,gnomad41_exome"
+		),
+		command_mem=lambda wildcards, resources, threads: (resources.mem_mb * threads - 2000)
+	threads:
+		resource['resource']['high']['threads']
+	resources:
+		mem_mb=resource['resource']['high']['mem_mb']
+	container:
+		container_image["terra_perl_anno"]
+	shell:
+		'''
+		perl {params.annovar_dir}/table_annovar.pl \
+		{input.vcf} \
+		{params.annovar_dir}/humandb_{params.ref_version} \
+		-buildver {params.ref_version} \
+		-out {params.outputanno} \
+		-remove \
+		-protocol {params.protocol} \
+		-operation g,f,f,f,f \
+		-nastring . \
+		-vcfinput
+		'''
+
+rule filter_anno_VQSRTranche:
+	input:
+		txt="{outpath}/03_variants_germline/04_haplotypecaller/13_annovar_VQSRTranche/{sample}.{ref_version}_multianno.txt"
+	output:
+		txt="{outpath}/03_variants_germline/04_haplotypecaller/14_filter_annovar_VQSRTranche/{sample}.{ref_version}_multianno_VQSRTranche.txt"
+	log:
+		"{outpath}/03_variants_germline/{sample}.{ref_version}.clinvarVQSRTranche.log"
+	threads:
+		resource['resource']['low']['threads']
+	resources:
+		mem_mb=resource['resource']['low']['mem_mb']
+	shell:
+		'''
+		awk 'BEGIN {{FS=OFS="\t"}} NR==1 {{print; next}} ($6 == "exonic" && $9 == "nonsynonymous SNV") || ($122 == "drug_response" || $122 == "Pathogenic" || $122 == "Likely_pathogenic") {{print}}' {input.txt} > {output.txt}
+		'''
+
+
 rule annotate_rcnv_gnomadlof_germline:
 	input:
-		tier_anno="{outpath}/03_variants_germline/04_haplotypecaller/13_annovar/{sample}.{ref_version}_multianno.txt"
+		tier_anno="{outpath}/03_variants_germline/04_haplotypecaller/13_annovar_pass/{sample}.{ref_version}_multianno.txt"
 	output:
 		sub="{outpath}/03_variants_germline/04_haplotypecaller/14_score/{sample}.{ref_version}.exonic_splicing_multianno.txt",
 		txt="{outpath}/03_variants_germline/04_haplotypecaller/14_score/{sample}.{ref_version}.rcnv_gnomadlof_multianno.txt"
@@ -505,9 +546,10 @@ rule annotate_rcnv_gnomadlof_germline:
 
 rule germline_summary:
 	input:
-		expand("{outpath}/03_variants_germline/14_score/{sample}.{ref_version}.rcnv_gnomadlof_multianno.txt", outpath=Outpath, ref_version=Ref_version, sample=SAMPLE)
+		expand("{outpath}/03_variants_germline/04_haplotypecaller/14_score/{sample}.{ref_version}.rcnv_gnomadlof_multianno.txt", outpath=Outpath, ref_version=Ref_version, sample=Sample),
+		expand("{outpath}/03_variants_germline/04_haplotypecaller/14_filter_annovar_VQSRTranche/{sample}.{ref_version}_multianno_VQSRTranche.txt", outpath=Outpath, ref_version=Ref_version, sample=Sample)
 	output:
-		"{outpath}/03_variants_germline/15_all/all.{ref_version}.germline_summary.txt"
+		"{outpath}/03_variants_germline/04_haplotypecaller/15_all/all.{ref_version}.germline_summary.txt"
 	log:
 		"{outpath}/03_variants_germline/logs/15_all.{ref_version}.summary.log"
 	params:

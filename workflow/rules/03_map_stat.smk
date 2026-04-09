@@ -1,6 +1,7 @@
 rule bqsr_insert:
 	input:
-		bam="{outpath}/02_map/05_apply_bqsr/{sample}/{sample}.bam"
+		bam="{outpath}/02_map/05_apply_bqsr/{sample}/{sample}.bam",
+		bai="{outpath}/02_map/05_apply_bqsr/{sample}/{sample}.bam.bai"
 	output:
 		png="{outpath}/02_map/06_stat/01_insert/01_insert/{sample}.bqsr.insert.png",
 		table="{outpath}/02_map/06_stat/01_insert/01_insert/{sample}.bqsr.fragment.txt"
@@ -12,19 +13,17 @@ rule bqsr_insert:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
-	container:
-		container_image['deeptools']
 	shell:
 		"""
-		source ~/anaconda3/etc/profile.d/conda.sh
-		conda activate deeptools
+		source ~/anaconda3/etc/profile.d/conda.sh; conda activate deeptools
 		bamPEFragmentSize -b {input.bam} -o {output.png} --maxFragmentLength 2000 --table {output.table}
 		conda deactivate
 		"""
 
 rule targt_intersect_bam:
 	input:
-		bam="{outpath}/02_map/{bam_type}/{sample}/{sample}.{bam_type}.bam"
+		#bam="{outpath}/02_map/{bam_type}/{sample}/{sample}.{bam_type}.bam"
+		bam = get_bam_for_stats
 	output:
 		bed=temp("{outpath}/02_map/06_stat/02_target/{sample}.{bam_type}.target.intersect.bed")
 	log:
@@ -36,7 +35,7 @@ rule targt_intersect_bam:
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
 	container:
-		container_image['bedtools']
+		container_image['bedtools_2.31.1']
 	shell:
 		"""
 		bedtools intersect -abam {input.bam} -b {params.TargeRegion} -wa -bed > {output.bed}
@@ -44,7 +43,8 @@ rule targt_intersect_bam:
 
 rule targt_intersectV_bam:
 	input:
-		bam="{outpath}/02_map/{bam_type}/{sample}/{sample}.{bam_type}.bam"
+		#bam="{outpath}/02_map/{bam_type}/{sample}/{sample}.{bam_type}.bam"
+		bam = get_bam_for_stats
 	output:
 		bed=temp("{outpath}/02_map/06_stat/02_target/{sample}.{bam_type}.target.v.intersect.bed")
 	log:
@@ -56,7 +56,7 @@ rule targt_intersectV_bam:
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
 	container:
-		"../envs/bedtools.sif"
+		container_image['bedtools_2.31.1']
 	shell:
 		"""
 		bedtools intersect -abam {input.bam} -b {params.TargeRegion} -v -bed > {output.bed}
@@ -65,7 +65,8 @@ rule targt_intersectV_bam:
 
 rule targt_cov_bam:
 	input:
-		bam="{outpath}/02_map/{bam_type}/{sample}/{sample}.{bam_type}.bam"
+		#bam="{outpath}/02_map/{bam_type}/{sample}/{sample}.{bam_type}.bam"
+		bam = get_bam_for_stats
 	output:
 		coverage="{outpath}/02_map/06_stat/02_target/{sample}.{bam_type}.target.coverage"
 	params:
@@ -79,7 +80,7 @@ rule targt_cov_bam:
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
 	container:
-		"../envs/bedtools.sif"
+		container_image['bedtools_2.31.1']
 	shell:
 		"""
 		bedtools coverage -a {params.TargeRegion} -b {input.bam} -sorted -g {params.versionsorted} | awk '{{print "{params.sample}\t" $4 "\t" $7}}' > {output.coverage}
@@ -88,7 +89,8 @@ rule targt_cov_bam:
 
 rule targt_cov_d_bam:
 	input:
-		i1="{outpath}/02_map/{bam_type}/{sample}/{sample}.{bam_type}.bam"
+		#i1="{outpath}/02_map/{bam_type}/{sample}/{sample}.{bam_type}.bam"
+		i1 = get_bam_for_stats
 	output:
 		o1="{outpath}/02_map/06_stat/02_target/{sample}.{bam_type}.target.coverage.d"
 	log:
@@ -101,7 +103,7 @@ rule targt_cov_d_bam:
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
 	container:
-		"../envs/bedtools.sif"
+		container_image['bedtools_2.31.1']
 	shell:
 		"""
 		bedtools coverage -a {params.TargeRegion} -b {input.i1} -d -sorted -g {params.versionsorted} > {output.o1}
@@ -121,8 +123,6 @@ rule mosaic_cov_d_bam:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
-	container:
-		"../envs/bedtools.sif"
 	shell:
 		"""
 		awk 'NR==FNR{{c[$1,$2]=$0}}NR!=FNR{{if(c[$1,$2]){{print $0}}}}' {params.MosaicRegion} <(awk 'BEGIN{{OFS="\t"}}{{$2 = $2 + $7; $3=$2}}1' {input.i1}) | awk '{{print $8}}' | sort | uniq -c | sed 's/^[ \t]*//' | sed 's/ /\t/g' | sort -k2,2n | awk '{{print "{params.sample}\t"$0}}'> {output.o1}
@@ -147,7 +147,7 @@ rule mosaic_cov_d_all_bam:
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
 	container:
-		"../envs/bedtools.sif"
+		container_image['terra_r']
 	shell:
 		"""
 		awk 'NR==FNR{{c[$1]=$0}}NR!=FNR{{if(c[$1]){{print c[$1]"\t"$0}}}}' {params.meta_sample} <(cat {input.i1}) > {output.o1} && Rscript {params.depth_cumcov_mosaic} -i {output.o1} -d 1000 -o {output.o2}
@@ -156,7 +156,7 @@ rule mosaic_cov_d_all_bam:
 
 rule targt_cov_hist_bam:
 	input:
-		i1="{outpath}/02_map/{bam_type}/{sample}/{sample}.{bam_type}.bam"
+		i1=get_bam_for_stats
 	output:
 		o2="{outpath}/02_map/06_stat/02_target/{sample}.{bam_type}.target.coverage.hist"
 	log:
@@ -165,14 +165,15 @@ rule targt_cov_hist_bam:
 		TargeRegion=config['TargeRegion'],
 		versionsorted=config['versionsorted']
 	threads:
-		resource['resource']['medium']['threads']
+		resource['resource']['very_high']['threads']
 	resources:
-		mem_mb=resource['resource']['medium']['mem_mb']
+		mem_mb=resource['resource']['very_high']['mem_mb']
 	container:
-		"../envs/bedtools.sif"
+		container_image['bedtools_2.31.1']
 	shell:
 		"""
-		bedtools coverage -a {params.TargeRegion} -b {input.i1} -hist -sorted -g {params.versionsorted} | grep "^all" > {output.o2}
+		#bedtools coverage -a {params.TargeRegion} -b {input.i1} -hist -sorted -g {params.versionsorted} | grep "^all" > {output.o2}
+		bedtools coverage -a {params.TargeRegion} -b {input.i1} -hist | grep "^all" > {output.o2}
 		"""
 
 rule exon_stat_sort:
@@ -227,13 +228,13 @@ rule exon_hist_stat:
 		"{outpath}/02_map/logs/{sample}.exon_hist_stat.log"
 	params:
 		sample="{sample}",
-		target_depth_stat="/pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/workflow/bin/target_depth_stat_v2.R"
+		target_depth_stat="/pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/workflow/bin/target_depth_stat_v2_1.R"
 	threads:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
 	container:
-		"../envs/r.sif"
+		container_image['terra_r']
 	shell:
 		"""
 		Rscript {params.target_depth_stat} --shist {input.i1} --dhist {input.i2} --dup {input.i4} --sort {input.i3} -o {output.o3}
@@ -254,13 +255,13 @@ rule exon_hist_plot:
 		"{outpath}/02_map/logs/all.exon_hist_plot.log"
 	params:
 		meta_sample=config['meta_sample'],
-		depth_cumcov_target="/pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/workflow/bin/depth_cumcov_target_v1.0.R"
+		depth_cumcov_target="/pi/michael.lodato-umw/junhui.li11-umw/BautistaSotelo_Cesar/20201130_MosaicVariant_DNA/00script/00_pipeline/target_sequence_analysis/workflow/bin/depth_cumcov_target_v1.1.R"
 	threads:
 		resource['resource']['medium']['threads']
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
 	container:
-		"../envs/r.sif"
+		container_image['terra_r']
 	shell:
 		"""
 		awk 'NR==FNR{{c[$1]=$0}}NR!=FNR{{if(c[$1]){{print c[$1] "\t" $0}}}}' {params.meta_sample} <(cat {input.i1}) > {output.o3} && Rscript {params.depth_cumcov_target} -i {output.o3} -d 1000 -o {output.o1}
@@ -283,7 +284,7 @@ rule probe_plot:
 	resources:
 		mem_mb=resource['resource']['medium']['mem_mb']
 	container:
-		"../envs/r.sif"
+		container_image['terra_r']
 	shell:
 		"""
 		awk 'NR==FNR{{c[$1]=$0}}NR!=FNR{{if(c[$1]){{print c[$1]"\t"$0}}}}' {params.meta_sample} <(cat {input}) > {output.o1} && Rscript {params.probe_cov} -i {output.o1} -o {output.o2}
@@ -296,13 +297,13 @@ rule map_stat_summary:
 			outpath=Outpath,
 			u=units.itertuples()
 		),
-		i21=expand(
-			["{outpath}/02_map/06_stat/02_target/plot/allsample.{bam_type}.target.coverage.hist.pdf"],
-			outpath=Outpath,
-			bam_type=["02_sort","03_rmdup"]
-		),
-		i3="{outpath}/02_map/06_stat/02_target/plot/all.03_rmdup.probe.coverage.pdf",
-		i4="{outpath}/02_map/06_stat/02_target/plot/all.03_rmdup.target.coverage.mosaic.pdf",
+		#i21=expand(
+		#	["{outpath}/02_map/06_stat/02_target/plot/allsample.{bam_type}.target.coverage.hist.pdf"],
+		#	outpath=Outpath,
+		#	bam_type=["02_sort","03_rmdup"]
+		#),
+		#i3="{outpath}/02_map/06_stat/02_target/plot/all.03_rmdup.probe.coverage.pdf",
+		#i4="{outpath}/02_map/06_stat/02_target/plot/all.03_rmdup.target.coverage.mosaic.pdf",
 		i5=expand(["{outpath}/02_map/06_stat/01_insert/01_insert/{u.sample}.bqsr.insert.png"],
 			outpath=Outpath,
 			u=units.itertuples())
