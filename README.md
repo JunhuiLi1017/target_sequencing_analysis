@@ -62,14 +62,16 @@ for example:
     3. cut adapters. Adapter sequences can be automatically detected, which means you don't have to input the adapter sequences to trim them.
 
 
-- **FastQC**: Raw read quality assessment
-- **MultiQC**: Aggregated QC reports
+- **fastqc(https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)**: Raw read quality assessment
+- **MultiQC(https://docs.seqera.io/multiqc/#:~:text=MultiQC%20is%20a%20reporting%20tool,log%20files%20and%20console%20outputs.)**: Aggregated QC reports
 
 ### Stage 2: Read Mapping & Processing
 - **BWA-MEM**: Read alignment to reference genome
 - **SAMtools**: BAM file processing and indexing
-- **umitools**: duplication reads remove
-- **GATK**: Base Quality Score Recalibration (BQSR)
+- **umitools**: duplication reads remove for samples with umi is true/yes
+- **picard**: duplication reads remove for samples with umi is not true/yes
+- **GATK(https://gatk.broadinstitute.org/hc/en-us/articles/360035890531-Base-Quality-Score-Recalibration-BQSR)**: Base Quality Score Recalibration (BQSR)
+    Systematic bias can originate from library preparation, sequencing, manufacturing defects in the flowcell chips, sequencer variation, and sequencing chemistry. It results in over- or underestimation of quality scores. GATK recalibrates base quality scores by building an error model using known covariates from all base calls (BaseRecalibrator), then applying adjustment to the dataset based on the model (ApplyBQSR).
 - **R script with bedtools output**: coverage, depth, duplication rate
 
 ### Stage 3: Variant Calling
