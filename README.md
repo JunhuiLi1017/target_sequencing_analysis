@@ -54,11 +54,12 @@ for example:
     A tool designed to provide ultrafast all-in-one preprocessing and quality control for FastQ data.
 
     ** Key functions:
+
+    1. filter out bad reads (too low quality, too short, or too many N...)
     
-    filter out bad reads (too low quality, too short, or too many N...)
-    cut low quality bases for per read in its 5' and 3' by evaluating the mean quality from a sliding window (like Trimmomatic but faster).
-    trim all reads in front and tail
-    cut adapters. Adapter sequences can be automatically detected, which means you don't have to input the adapter sequences to trim them.
+    2. trim all reads in front and tail
+
+    3. cut adapters. Adapter sequences can be automatically detected, which means you don't have to input the adapter sequences to trim them.
 
 
 - **FastQC**: Raw read quality assessment
