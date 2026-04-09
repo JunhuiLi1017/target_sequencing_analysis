@@ -93,8 +93,11 @@ for example:
 - **FilterMutectCalls** (https://gatk.broadinstitute.org/hc/en-us/articles/360036856831-FilterMutectCalls): FilterMutectCalls applies filters to the raw output of Mutect2. 
 
 
-- **Pisces**: Illumina's variant caller
-- **RePlow**: Alternative variant caller
+- **Pisces(https://github.com/Illumina/Pisces/wiki/Pisces-Quick-Start-5.2.9)**: Illumina's variant caller
+    Somatic variants calling mode is used in our pipeline
+
+- **RePlow(https://sourceforge.net/p/replow/wiki/Home/)**: a Java based variant caller designed for detecting somatic single nucleotide variants (SNVs) from the replicated set of high-depth sequencing data. RePlow is highly specialized for the identification of somatic mutations with low variant allele frequency (VAF ~1%). RePlow accurately detects such low-level mutations based on the probabilistic model that jointly analyzes library-level replicates, regardless of the sequencing platform.
+
 - **Variant filtering**: Quality-based filtering
 
 ### Stage 4: Analysis & Reporting
