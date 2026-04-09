@@ -75,7 +75,21 @@ for example:
 - **R script with bedtools output**: coverage, depth, duplication rate
 
 ### Stage 3: Variant Calling
-- **Mutect2**: GATK's somatic variant caller
+- **Mutect2(https://gatk.broadinstitute.org/hc/en-us/articles/360037593851-Mutect2)**: GATK's somatic variant caller
+    main for somatic calling, it may apply to other contexts, such as mitochondrial variant calling and detection of somatic mosaicism.
+
+    Modes:
+
+    - Tumor with matched normal: tumor and normal bam file required
+
+    - Tumor-only mode: owned or public PON vcf file and bam file
+
+    - Mitochondrial mode
+
+    -Force-calling mode
+
+we used Tumor-only mode in this pipeline, in our config file, we used public PON vcf
+
 - **Pisces**: Illumina's variant caller
 - **RePlow**: Alternative variant caller
 - **Variant filtering**: Quality-based filtering
